@@ -1,0 +1,7 @@
+default:
+  ENGINE: 'django.db.backends.postgresql'
+  OPTIONS:
+    service: 'some-service'
+
+test:
+  ENGINE: "django.db.backends.sqlite3"

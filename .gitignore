@@ -1,0 +1,6 @@
+local.**
+**.env
+**local.yml
+**/.venv
+rifles.sqlite3
+**/__pycache__/
