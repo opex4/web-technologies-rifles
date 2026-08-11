@@ -1,26 +1,40 @@
 <script setup lang="ts">
-import type {Rifle} from "@/types/Rifle.ts";
-import type {AmmoType} from "@/types/AmmoType.ts";
-import type {Country} from "@/types/Country.ts";
-import type {Constructor} from "@/types/Constructor.ts";
-import type {ArmedConflict} from "@/types/ArmedConflict.ts";
+    import type { RifleCardData } from "@/types/RifleCardData.ts";
 
+    const props = defineProps<{
+        rifle: RifleCardData,
+    }>();
 
-defineProps<{
-    rifle: Rifle,
-    ammoTypes: AmmoType[],
-    countries: Country[],
-    constructors: Constructor[],
-    armedConflicts: ArmedConflict[]
-}>();
+    const emit = defineEmits<{
+        (e: 'deleteRifle', id: number): void;
+        (e: 'updateRifle', rifle: RifleCardData): void;
+    }>();
+
+    const onDelRifle = () => {
+        if (confirm(`Вы уверены, что хотите удалить "${props.rifle.title}"?`)) {
+            emit('deleteRifle', props.rifle.id);
+        }
+    };
+
+    const onUpdateRifle = () => {
+        emit('updateRifle', props.rifle.id);
+    };
 </script>
 
 <template>
     <div class="card border-light">
         <div class="card-header border-light">
-            <h2 class="m-0">
-                {{ rifle.title }}
-            </h2>
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="d-flex justify-content-center align-items-center m-0">
+                        {{ rifle.title }}
+                    </h2>
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-success m-1" @click="onUpdateRifle">Update</button>
+                        <button type="button" class="btn btn-danger m-1" @click="onDelRifle">Delete</button>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="card-body">
             <p class="m-0">
@@ -35,18 +49,18 @@ defineProps<{
                             Дата создания: {{ rifle.created_at }}
                         </li>
                         <li class="list-group-item">
-                            Патрон: {{ ammoTypes[rifle.ammo_type - 1].title }}
+                            Патрон: {{ rifle.ammoName }}
                         </li>
                         <li class="list-group-item">
-                            Страна происхождения: {{ countries[rifle.country_of_origin - 1].name }}
+                            Страна происхождения: {{ rifle.countryName }}
                         </li>
                     </ul>
                 </div>
                 <div class="p-2">
                     Конструкторы:
-                    <ul>
-                        <li v-for="constructor_id in rifle.constructors">
-                            {{ constructors[constructor_id - 1].name }}
+                    <ul class="m-0">
+                        <li v-for="constructor in rifle.constructorNames" :key="constructor">
+                            {{ constructor }}
                         </li>
                     </ul>
                 </div>
@@ -54,9 +68,9 @@ defineProps<{
         </div>
         <div class="card-body">
             Применено в конфликтах:
-            <ul class="d-flex m-0">
-                <li class="my-1 mx-3" v-for="conflict_id in rifle.used_in_conflicts">
-                    {{ armedConflicts[conflict_id - 1].title }}
+            <ul class="m-0">
+                <li class="my-1 mx-3" v-for="conflict in rifle.conflictNames" :key="conflict">
+                     {{ conflict }}
                 </li>
             </ul>
         </div>

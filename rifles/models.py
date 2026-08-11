@@ -56,7 +56,7 @@ class Rifle(models.Model):
     description = models.TextField("Описание", null=False)
     created_at = models.DateField("Дата создания", null=False)
     constructors = ManyToManyField(Constructor, verbose_name="Создатели")
-    country_of_origin = models.ForeignKey(Country, null=True, on_delete=models.CASCADE,
+    country_of_origin = models.ForeignKey(Country, null=False, on_delete=models.CASCADE,
                                           verbose_name="Страна происхождения")
     ammo_type = ForeignKey(AmmoType, null=False, on_delete=models.CASCADE, verbose_name="Тип патрон")
     used_in_conflicts = ManyToManyField(ArmedConflict, verbose_name="Была использована в конфликтах", blank=True)
