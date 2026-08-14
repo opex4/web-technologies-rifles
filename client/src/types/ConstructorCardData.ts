@@ -1,0 +1,6 @@
+export interface Constructor {
+    id: number;
+    name: string;
+    born_at: string;
+    died_at: string | null;
+}
