@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from rifles.models import Rifle, Constructor, AmmoType, ArmedConflict, Country
+from rifles.models import Rifle, Constructor, AmmoType, ArmedConflict, Country, TypeOfMount, Attachment, Loadout
 
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -39,3 +39,22 @@ class RifleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rifle
         fields = '__all__'
+        
+        
+class TypeOfMountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TypeOfMount
+        fields = '__all__'
+        
+        
+class AttachmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attachment
+        fields = '__all__'
+        
+        
+class LoadoutSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Loadout
+        fields = '__all__'
+        read_only_fields = ['creator']

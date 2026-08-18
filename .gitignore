@@ -2,3 +2,5 @@ local.**
 **local.yml
 db.sqlite3
 **/__pycache__/
+.conda/
+.venv/

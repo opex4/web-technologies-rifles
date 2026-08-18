@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from rifles.models import Rifle, Constructor, AmmoType, Country, ArmedConflict
+from rifles.models import Rifle, Constructor, AmmoType, Country, ArmedConflict, TypeOfMount, Attachment, Loadout
 
 
 # Register your models here.
@@ -26,4 +26,16 @@ class CountryAdmin(admin.ModelAdmin):
 
 @admin.register(ArmedConflict)
 class ArmedConflictAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(TypeOfMount)
+class TypeOfMountAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(Attachment)
+class AttachmentAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(Loadout)
+class LoadoutAdmin(admin.ModelAdmin):
     pass

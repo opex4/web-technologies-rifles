@@ -19,7 +19,8 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 import rifles.views
-from rifles.api import RiflesViewSet, AmmoTypesViewSet, ConstructorsViewSet, CountriesViewSet, ArmedConflictsViewSet
+from rifles.api import RiflesViewSet, AmmoTypesViewSet, ConstructorsViewSet, CountriesViewSet, ArmedConflictsViewSet, \
+    TypeOfMountViewSet, AttachmentViewSet, LoadoutViewSet
 
 router = DefaultRouter()
 router.register('rifles', RiflesViewSet, basename='rifles')
@@ -27,6 +28,9 @@ router.register('ammo_types', AmmoTypesViewSet, basename='ammo_types')
 router.register('constructors', ConstructorsViewSet, basename='constructors')
 router.register('countries', CountriesViewSet, basename='countries')
 router.register('armed_conflicts', ArmedConflictsViewSet, basename='armed_conflicts')
+router.register('types_of_mounts', TypeOfMountViewSet, basename='types_of_mounts')
+router.register('attachments', AttachmentViewSet, basename='attachments')
+router.register('loadouts', LoadoutViewSet, basename='loadouts')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', rifles.views.ShowRiflesView.as_view(), name='show-rifles'),

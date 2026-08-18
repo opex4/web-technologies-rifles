@@ -51,6 +51,17 @@ class Constructor(models.Model):
         return self.name
 
 
+class TypeOfMount(models.Model):
+    title = models.TextField("Тип крепления", null=False)
+        
+    class Meta:
+        verbose_name = "Тип крепления"
+        verbose_name_plural = "Типы крепления"
+
+    def __str__(self):
+        return self.title
+    
+
 class Rifle(models.Model):
     title = models.TextField("Название винтовки", null=False)
     description = models.TextField("Описание", null=False)
@@ -60,10 +71,37 @@ class Rifle(models.Model):
                                           verbose_name="Страна происхождения")
     ammo_type = ForeignKey(AmmoType, null=False, on_delete=models.CASCADE, verbose_name="Тип патрон")
     used_in_conflicts = ManyToManyField(ArmedConflict, verbose_name="Была использована в конфликтах", blank=True)
+    types_of_mounts = ManyToManyField(TypeOfMount, verbose_name="Типы креплений", blank=True)
 
     class Meta:
         verbose_name = "Винтовка"
         verbose_name_plural = "Винтовки"
+
+    def __str__(self):
+        return self.title
+    
+    
+class Attachment(models.Model):
+    title = models.TextField("Обвес", null=False)
+    type_of_mount = ForeignKey(TypeOfMount, null=False, on_delete=models.CASCADE, verbose_name="Тип крепления")
+        
+    class Meta:
+        verbose_name = "Обвес"
+        verbose_name_plural = "Обвесы"
+
+    def __str__(self):
+        return self.title
+
+
+class Loadout(models.Model):
+    title = models.TextField("Название сборки", null=False)
+    rifle = ForeignKey(Rifle, null=False, on_delete=models.CASCADE, verbose_name="Винтовка")
+    creator = ForeignKey('general.UserProfile', null=False, on_delete=models.CASCADE, verbose_name="Создатель сборки")
+    attachments = ManyToManyField(Attachment, verbose_name="Обвесы", blank=True)
+    
+    class Meta:
+        verbose_name = "Сборка"
+        verbose_name_plural = "Сборки"
 
     def __str__(self):
         return self.title
