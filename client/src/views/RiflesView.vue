@@ -7,6 +7,7 @@
     import type {Rifle} from "@/types/Rifle.ts";
     import type {Country} from "@/types/Country.ts";
     import type {RifleCardData} from "@/types/RifleCardData.ts";
+    import type {TypeOfMount} from "@/types/TypeOfMount.ts";
     import RifleCard from "@/components/RifleCard.vue";
 
     const countries = ref([] as Country[]);
@@ -14,7 +15,8 @@
     const constructors = ref([] as Constructor[]);
     const armedConflicts = ref([] as ArmedConflict[]);
     const rifles = ref([] as Rifle[]);
-    const rifleCardData = ref([] as RifleCadrData[]);
+    const rifleCardData = ref([] as RifleCardData[]);
+    const typesOfMounts = ref([] as TypeOfMount[]);
     const form = ref({
         title: '',
         description: '',
@@ -22,7 +24,8 @@
         ammo_type: null as number,
         country_of_origin: null as number,
         constructors: [] as number[],
-        used_in_conflicts: [] as number[]
+        used_in_conflicts: [] as number[],
+        types_of_mounts: [] as number[]
     });
     const editingId = ref<number | null>(null);
     const constructorIsEmpty = ref(false);
@@ -51,7 +54,10 @@
                 ),
                 conflictNames: rifle.used_in_conflicts.map(id => 
                     armedConflicts.value.find(c => c.id === id)!.title
-                )
+                ),
+                mountNames: rifle.types_of_mounts.map(id => 
+                    typesOfMounts.value.find(m => m.id === id)!.title
+                ),
             };
         });
     }
@@ -61,6 +67,7 @@
         await loadAmmoTypes();
         await loadConstructors();
         await loadArmedConflicts();
+        await loadTypesOfMounts();
         await loadRifles();
     }
 
@@ -82,6 +89,11 @@
     async function loadArmedConflicts() {
         armedConflicts.value = await axios.get('/api/armed_conflicts/')
             .then(res => res.data as ArmedConflict[]);
+    }
+
+    async function loadTypesOfMounts() {
+        typesOfMounts.value = await axios.get('/api/types_of_mounts/')
+            .then(res => res.data as TypeOfMount[]);
     }
 
     async function loadRifles() {
@@ -142,7 +154,8 @@
             ammo_type: null,
             country_of_origin: null,
             constructors: [],
-            used_in_conflicts: []
+            used_in_conflicts: [],
+            types_of_mounts: []
         };
         editingId.value = null;
         constructorIsEmpty.value = false;
@@ -161,7 +174,8 @@
             ammo_type: original.ammo_type,
             country_of_origin: original.country_of_origin,
             constructors: original.constructors,
-            used_in_conflicts: original.used_in_conflicts
+            used_in_conflicts: original.used_in_conflicts,
+            types_of_mounts: original.types_of_mounts
         };
         
         editingId.value = original.id;
@@ -222,6 +236,15 @@
             <select class="form-select" multiple size="5" v-model="form.constructors">
                 <option v-for="constructor in constructors" :key="constructor.id" :value="constructor.id">
                     {{ constructor.name }}
+                </option>
+            </select>
+            <div class="form-text">Зажмите Ctrl для выбора нескольких элементов</div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Типы креплений</label>
+            <select class="form-select" multiple size="5" v-model="form.types_of_mounts">
+                <option v-for="mount in typesOfMounts" :key="mount.id" :value="mount.id">
+                    {{ mount.title }}
                 </option>
             </select>
             <div class="form-text">Зажмите Ctrl для выбора нескольких элементов</div>

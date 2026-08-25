@@ -72,6 +72,7 @@ class Rifle(models.Model):
     ammo_type = ForeignKey(AmmoType, null=False, on_delete=models.CASCADE, verbose_name="Тип патрон")
     used_in_conflicts = ManyToManyField(ArmedConflict, verbose_name="Была использована в конфликтах", blank=True)
     types_of_mounts = ManyToManyField(TypeOfMount, verbose_name="Типы креплений", blank=True)
+    picture = models.ImageField("Изображение", null=True, upload_to="rifles", blank=True)
 
     class Meta:
         verbose_name = "Винтовка"

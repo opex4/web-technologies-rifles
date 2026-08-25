@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
+from general.api import UserProfileViewSet
 import rifles.views
 from rifles.api import RiflesViewSet, AmmoTypesViewSet, ConstructorsViewSet, CountriesViewSet, ArmedConflictsViewSet, \
     TypeOfMountViewSet, AttachmentViewSet, LoadoutViewSet
@@ -31,6 +32,7 @@ router.register('armed_conflicts', ArmedConflictsViewSet, basename='armed_confli
 router.register('types_of_mounts', TypeOfMountViewSet, basename='types_of_mounts')
 router.register('attachments', AttachmentViewSet, basename='attachments')
 router.register('loadouts', LoadoutViewSet, basename='loadouts')
+router.register('users', UserProfileViewSet, basename='users')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', rifles.views.ShowRiflesView.as_view(), name='show-rifles'),

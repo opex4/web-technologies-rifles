@@ -7,4 +7,6 @@ export interface RifleCardData {
     countryName: string;
     constructorNames: string[];
     conflictNames: string[];
+    mountNames: string[];
+    // picture: string;
 }

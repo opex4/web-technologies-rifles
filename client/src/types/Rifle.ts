@@ -7,4 +7,6 @@ export interface Rifle {
     country_of_origin: number;
     ammo_type: number;
     used_in_conflicts: number[];
+    types_of_mounts: number[];
+    // picture: string;
 }

@@ -54,6 +54,11 @@ class AttachmentSerializer(serializers.ModelSerializer):
         
         
 class LoadoutSerializer(serializers.ModelSerializer):
+    # def create(self, validated_data):
+    #     if 'request' in self.context:
+    #         validated_data['user'] = self.context['request'].user
+    #     return super().create(validated_data)
+        
     class Meta:
         model = Loadout
         fields = '__all__'

@@ -1,5 +1,6 @@
 <script setup lang="ts">
     import type { RifleCardData } from "@/types/RifleCardData.ts";
+import { Rifle } from '../types/Rifle';
 
     const props = defineProps<{
         rifle: RifleCardData,
@@ -74,5 +75,16 @@
                 </li>
             </ul>
         </div>
+        <div class="card-body border-top">
+            Типы креплений:
+            <ul class="m-0">
+                <li v-for="mount in rifle.mountNames" :key="mount">
+                    {{ mount }}
+                </li>
+            </ul>
+        </div>
+        <!-- <div class="card-body border-top">
+            Картинка: {{ Rifle.picture }}
+        </div> -->
     </div>
 </template>

@@ -1,9 +1,20 @@
 <script setup lang="ts">
+    import { storeToRefs } from "pinia";
+    import { useUserInfoStore } from "@/stores/user_info_store.ts";
+    import { onBeforeMount } from "vue";
 
+    const userInfoStore = useUserInfoStore();
+    const {
+        isAuth,
+    } = storeToRefs(userInfoStore);
+
+    onBeforeMount(async () => {
+        userInfoStore.fetchUserInfo();
+    })
 </script>
 
 <template>
-    <div class="container">
+    <div class="container" v-if="isAuth">
         <nav class="nav nav-pills flex-column flex-sm-row mt-4">
             <router-link 
                 class="flex-sm-fill text-sm-center nav-link" 
@@ -45,7 +56,7 @@
                 exact-active-class="active" 
                 to="/loadouts"
             >Сборки</router-link>
-            <li class="nav-item dropdown">
+            <!-- <li class="nav-item dropdown">
                 <a 
                     class="nav-link dropdown-toggle" 
                     data-bs-toggle="dropdown" 
@@ -61,7 +72,13 @@
                         >Админка</a>
                     </li>
                 </ul>
-            </li>
+            </li> -->
+            <router-link 
+                class="flex-sm-fill text-sm-center nav-link" 
+                exact-active-class="active" 
+                to="/user"
+            >Пользователь</router-link>
+            <a class="flex-sm-fill text-sm-center nav-link" href="/admin">Админка</a>
         </nav>
     </div>
     <div class="container">
