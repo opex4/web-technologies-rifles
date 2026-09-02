@@ -3,14 +3,12 @@
     import { storeToRefs } from "pinia";
     import { useUserInfoStore } from "@/stores/user_info_store.ts";
     import axios from 'axios';
-    import type {User} from "@/types/User.ts";
-    import Cookies from 'js-cookie';
     import { useRouter } from "vue-router";
 
     const router = useRouter();
     const username = ref<string>('');
     const password = ref<string>(''); 
-    const confirmPassword = ref<string>();
+    const confirmPassword = ref<string>('');
     const userInfoStore = useUserInfoStore();
     const {
         isAuth,
@@ -25,25 +23,63 @@
     }
 
     async function onLoginFormSubmit() {
-        const r = await axios.post("/api/users/login/", {
-            username: username.value,
-            password: password.value,
-        });
+        if (!isReg.value){
+            try{
+                const r = await axios.post("/api/users/login/", {
+                    username: username.value,
+                    password: password.value,
+                });
 
-        username.value = '';
-        password.value = '';
+                username.value = '';
+                password.value = '';
 
-        await userInfoStore.fetchUserInfo();
+                await userInfoStore.fetchUserInfo();
 
-        if (isAuth.value){
-            router.replace({ name: 'RiflesView' });
+                if (isAuth.value){
+                    router.replace({ name: 'RiflesView' });
+                }
+            } catch (error: any) {
+                if (error.response?.data?.status == "failed"){
+                    alert('Неверный пароль');
+                }
+                username.value = '';
+                password.value = '';               
+            }
+        } else {
+            if (password.value != confirmPassword.value){
+                alert('Пароли не совпадают');
+                confirmPassword.value = '';
+                return;
+            }
+
+            try{
+                const r = await axios.post("/api/users/create/", {
+                    username: username.value,
+                    password: password.value,
+                });
+
+                await userInfoStore.fetchUserInfo();
+
+                if (isAuth.value){
+                    router.replace({ name: 'RiflesView' });
+                }   
+            }
+            catch (error: any) {
+                if (error.response?.data?.status == "usernameFailed"){
+                    alert('Пользователь с таким именем уже существует');
+                }
+                username.value = '';
+                password.value = '';
+                confirmPassword.value = '';                
+            }         
         }
+        
     }
 
     onBeforeMount(async () => {
         await userInfoStore.fetchUserInfo();
         if (isAuth.value){
-            router.push({ name: 'RiflesView' });
+            router.replace({ name: 'RiflesView' });
         }
     })
 
@@ -62,7 +98,7 @@
                 <input type="password" class="form-control" id="password" aria-describedby="Введите пароль" v-model="password">
             </div>
             <div class="mb-3" v-if="isReg">
-                <label for="password" class="form-label">Повторение Пароля</label>
+                <label for="confirmPassword" class="form-label">Повторение Пароля</label>
                 <input type="password" class="form-control" id="confirmPassword" aria-describedby="Повторите пароль" v-model="confirmPassword">
             </div>
             <div class="d-flex gap-2">

@@ -30,12 +30,6 @@ class ConstructorSerializer(serializers.ModelSerializer):
 
 
 class RifleSerializer(serializers.ModelSerializer):
-    # constructors = ConstructorSerializer(many=True, read_only=True)
-    # used_in_conflicts = ArmedConflictSerializer(many=True, read_only=True)
-    # country_of_origin = CountrySerializer(read_only=True)
-    # ammo_type = AmmoTypeSerializer(read_only=True)
-
-
     class Meta:
         model = Rifle
         fields = '__all__'
@@ -54,12 +48,7 @@ class AttachmentSerializer(serializers.ModelSerializer):
         
         
 class LoadoutSerializer(serializers.ModelSerializer):
-    # def create(self, validated_data):
-    #     if 'request' in self.context:
-    #         validated_data['user'] = self.context['request'].user
-    #     return super().create(validated_data)
-        
+    creator = serializers.CharField(source='creator.user.username', read_only=True)
     class Meta:
         model = Loadout
-        fields = '__all__'
-        read_only_fields = ['creator']
+        exclude = ['id']
