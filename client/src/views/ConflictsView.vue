@@ -3,6 +3,14 @@ import { ref, onBeforeMount } from 'vue';
 import axios from 'axios';
 import type { ArmedConflict } from '@/types/ArmedConflict.ts';
 import ConflictCard from '@/components/ConflictCard.vue';
+import { storeToRefs } from "pinia";
+import { useUserInfoStore } from "@/stores/user_info_store.ts";
+
+const userStore = useUserInfoStore();
+const {
+    moderatorPerm,
+    secondPerm,
+} = storeToRefs(userStore);
 
 const conflicts = ref<ArmedConflict[]>([]);
 const form = ref({
@@ -88,7 +96,7 @@ async function deleteConflict(id: number) {
 </script>
 
 <template>
-    <form @submit.prevent="submitForm">
+    <form @submit.prevent="submitForm" v-if="moderatorPerm && secondPerm">
         <fieldset>
             <legend>{{ editingId !== null ? 'Редактирование конфликта' : 'Создание нового конфликта' }}</legend>
             <div class="mb-3">

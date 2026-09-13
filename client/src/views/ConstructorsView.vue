@@ -3,6 +3,14 @@ import { ref, onBeforeMount } from 'vue';
 import axios from 'axios';
 import type { Constructor } from '@/types/Constructor.ts';
 import ConstructorCard from '@/components/ConstructorCard.vue';
+import { storeToRefs } from "pinia";
+import { useUserInfoStore } from "@/stores/user_info_store.ts";
+
+const userStore = useUserInfoStore();
+const {
+    moderatorPerm,
+    secondPerm,
+} = storeToRefs(userStore);
 
 const constructors = ref<Constructor[]>([]);
 const form = ref({
@@ -88,7 +96,7 @@ async function deleteConstructor(id: number) {
 </script>
 
 <template>
-    <form @submit.prevent="submitForm">
+    <form @submit.prevent="submitForm" v-if="moderatorPerm && secondPerm">
         <fieldset>
             <legend>{{ editingId !== null ? 'Редактирование конструктора' : 'Создание нового конструктора' }}</legend>
             <div class="mb-3">

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from rifles.models import Rifle, Constructor, AmmoType, Country, ArmedConflict, TypeOfMount, Attachment, Loadout
+from rifles.models import Rifle, Constructor, AmmoType, Country, ArmedConflict, TypeOfMount, Attachment, Loadout, LoadoutAttachment
 
 
 # Register your models here.
@@ -38,4 +38,8 @@ class AttachmentAdmin(admin.ModelAdmin):
 
 @admin.register(Loadout)
 class LoadoutAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(LoadoutAttachment)
+class LoadoutAttachmentAdmin(admin.ModelAdmin):
     pass

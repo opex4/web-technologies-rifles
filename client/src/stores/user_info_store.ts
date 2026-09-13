@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import type {User} from "@/types/User.ts";
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
@@ -12,6 +12,11 @@ export const useUserInfoStore = defineStore('userInfoStore', () => {
     const permissions = ref<string[]>([]);
     const type = ref<string>();
     const second = ref<boolean>(null);
+
+    const readerPerm  = computed<boolean>(() => type.value === 'reader' || type.value === 'builder' || type.value === 'moderator');
+    const builderPerm = computed<boolean>(() => type.value === 'builder' || type.value === 'moderator');
+    const moderatorPerm = computed<boolean>(() => type.value === 'moderator');
+    const secondPerm = computed<boolean>(() => second.value === true);
 
     async function fetchUserInfo() {
         userInfo.value = await axios.get('/api/users/my/')
@@ -35,5 +40,10 @@ export const useUserInfoStore = defineStore('userInfoStore', () => {
         type,
         second,
         fetchUserInfo,
+
+        readerPerm,
+        builderPerm,
+        moderatorPerm,
+        secondPerm,
     }
 })

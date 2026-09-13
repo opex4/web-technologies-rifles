@@ -4,6 +4,14 @@ import { onBeforeMount, ref } from 'vue';
 import type { TypeOfMount } from '@/types/TypeOfMount.ts';
 import type { TypeOfMountCardData } from '@/types/TypeOfMountCardData.ts';
 import TypeOfMountCard from '@/components/TypeOfMountCard.vue';
+import { storeToRefs } from "pinia";
+import { useUserInfoStore } from "@/stores/user_info_store.ts";
+
+const userStore = useUserInfoStore();
+const {
+    builderPerm,
+    secondPerm,
+} = storeToRefs(userStore);
 
 const mounts = ref([] as TypeOfMount[]);
 const mountCardData = ref([] as TypeOfMountCardData[]);
@@ -82,7 +90,7 @@ async function deleteMount(id: number) {
 </script>
 
 <template>
-    <form @submit.prevent="submitForm">
+    <form @submit.prevent="submitForm" v-if="builderPerm && secondPerm">
         <fieldset>
             <legend>{{ editingId !== null ? 'Редактирование типа крепления' : 'Создание нового типа крепления' }}</legend>
             <div class="mb-3">

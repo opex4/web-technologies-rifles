@@ -1,5 +1,13 @@
 <script setup lang="ts">
 import type { AttachmentCardData } from '@/types/AttachmentCardData.ts';
+import { storeToRefs } from "pinia";
+import { useUserInfoStore } from "@/stores/user_info_store.ts";
+
+const userStore = useUserInfoStore();
+const {
+    builderPerm,
+    secondPerm,
+} = storeToRefs(userStore);
 
 const props = defineProps<{
     attachment: AttachmentCardData,
@@ -29,7 +37,7 @@ const onUpdateAttachment = () => {
                     <h2 class="d-flex justify-content-center align-items-center m-0">
                         {{ attachment.title }}
                     </h2>
-                    <div class="d-flex justify-content-end">
+                    <div class="d-flex justify-content-end" v-if="builderPerm && secondPerm">
                         <button type="button" class="btn btn-success m-1" @click="onUpdateAttachment">Update</button>
                         <button type="button" class="btn btn-danger m-1" @click="onDelAttachment">Delete</button>
                     </div>

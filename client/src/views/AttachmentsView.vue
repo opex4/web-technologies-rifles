@@ -5,6 +5,14 @@ import type { Attachment } from '@/types/Attachment.ts';
 import type { AttachmentCardData } from '@/types/AttachmentCardData.ts';
 import type { TypeOfMount } from '@/types/TypeOfMount.ts';
 import AttachmentCard from '@/components/AttachmentCard.vue';
+import { storeToRefs } from "pinia";
+import { useUserInfoStore } from "@/stores/user_info_store.ts";
+
+const userStore = useUserInfoStore();
+const {
+    builderPerm,
+    secondPerm,
+} = storeToRefs(userStore);
 
 const attachments = ref([] as Attachment[]);
 const attachmentCardData = ref([] as AttachmentCardData[]);
@@ -107,7 +115,7 @@ async function deleteAttachment(id: number) {
 </script>
 
 <template>
-    <form @submit.prevent="submitForm">
+    <form @submit.prevent="submitForm" v-if="builderPerm && secondPerm">
         <fieldset>
             <legend>{{ editingId !== null ? 'Редактирование обвеса' : 'Создание нового обвеса' }}</legend>
             <div class="mb-3">

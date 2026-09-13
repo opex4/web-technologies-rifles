@@ -1,6 +1,14 @@
 <script setup lang="ts">
     import type { RifleCardData } from "@/types/RifleCardData.ts";
-import { Rifle } from '../types/Rifle';
+    import { Rifle } from '../types/Rifle';
+    import { storeToRefs } from "pinia";
+    import { useUserInfoStore } from "@/stores/user_info_store.ts";
+
+    const userStore = useUserInfoStore();
+    const {
+        moderatorPerm,
+        secondPerm,
+    } = storeToRefs(userStore);
 
     const props = defineProps<{
         rifle: RifleCardData,
@@ -30,7 +38,7 @@ import { Rifle } from '../types/Rifle';
                     <h2 class="d-flex justify-content-center align-items-center m-0">
                         {{ rifle.title }}
                     </h2>
-                    <div class="d-flex justify-content-end">
+                    <div class="d-flex justify-content-end" v-if="moderatorPerm && secondPerm">
                         <button type="button" class="btn btn-success m-1" @click="onUpdateRifle">Update</button>
                         <button type="button" class="btn btn-danger m-1" @click="onDelRifle">Delete</button>
                     </div>

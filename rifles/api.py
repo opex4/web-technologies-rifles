@@ -153,11 +153,4 @@ class LoadoutViewSet(
             return Loadout.objects.all()
         return Loadout.objects.none()
     
-    # @action(detail=False, url_path="create-loadout", methods=['POST'])
-    # def create_loadout(self, request, *args, **kwargs):
-        
-    #     return super().create(request, *args, **kwargs)
     
-    # def get_queryset(self):
-    #     qs = super().get_queryset()
-    #     qs = qs.filter(user=self.request.user)

@@ -9,6 +9,8 @@
     import type {RifleCardData} from "@/types/RifleCardData.ts";
     import type {TypeOfMount} from "@/types/TypeOfMount.ts";
     import RifleCard from "@/components/RifleCard.vue";
+    import { storeToRefs } from "pinia";
+    import { useUserInfoStore } from "@/stores/user_info_store.ts";
 
     const countries = ref([] as Country[]);
     const ammoTypes = ref([] as AmmoType[]);
@@ -31,6 +33,11 @@
     const constructorIsEmpty = ref(false);
     const ammoIsEmpty = ref(false);
     const countryIsEmpty = ref(false);
+    const userStore = useUserInfoStore();
+    const {
+        moderatorPerm,
+        secondPerm,
+    } = storeToRefs(userStore);
 
     onBeforeMount(async () => {
         await loadAll();
@@ -196,7 +203,7 @@
 </script>
 
 <template>
-    <form @submit.prevent="submitForm">
+    <form @submit.prevent="submitForm" v-if="moderatorPerm && secondPerm">
         <fieldset>
         <legend>{{ editingId !== null ? 'Редактирование винтовки' : 'Создание новой винтовки' }}</legend>
         <div class="mb-3">

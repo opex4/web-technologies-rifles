@@ -1,32 +1,53 @@
 <script setup lang="ts">
 import axios from 'axios';
-import { onBeforeMount, ref } from 'vue';
+import { onBeforeMount, ref, computed } from 'vue';
 import type { Loadout } from '@/types/Loadout.ts';
 import type { LoadoutCardData } from '@/types/LoadoutCardData.ts';
 import type { Rifle } from '@/types/Rifle.ts';
 import type { Attachment } from '@/types/Attachment.ts';
-import type { UserProfile } from '@/types/UserProfile.ts';
+import type { TypeOfMount } from '@/types/TypeOfMount.ts';
 import LoadoutCard from '@/components/LoadoutCard.vue';
+import { storeToRefs } from "pinia";
+import { useUserInfoStore } from "@/stores/user_info_store.ts";
+
+const userStore = useUserInfoStore();
+const {
+    builderPerm,
+    secondPerm,
+} = storeToRefs(userStore);
 
 const loadouts = ref([] as Loadout[]);
 const loadoutCardData = ref([] as LoadoutCardData[]);
 const rifles = ref([] as Rifle[]);
 const attachments = ref([] as Attachment[]);
-const userProfiles = ref([] as UserProfile[]);
+const mounts = ref([] as TypeOfMount[]);
+
+const rifleMountsAttachments = computed(() => {
+    const rifle = rifles.value.find(r => r.id === form.value.rifle);
+    if (!rifle) return [];
+
+    return rifle.types_of_mounts.map(mountId => {
+        const mount = mounts.value.find(m => m.id === mountId);
+        if (!mount) return null;
+        return {
+            mount,
+            availableAttachments: attachments.value.filter(a => a.type_of_mount === mountId),
+        };
+    }).filter(item => item !== null);
+});
 
 const form = ref({
     title: '',
     rifle: null as number | null,
-    creator: null as number | null,
-    attachments: [] as number[]
+    attachments: {} as Record<number, number | null>,
 });
+
 const editingId = ref<number | null>(null);
 const titleIsEmpty = ref(false);
 const rifleIsEmpty = ref(false);
-const creatorIsEmpty = ref(false);
 
 onBeforeMount(async () => {
-    await Promise.all([loadLoadouts(), loadRifles(), loadAttachments(), loadUserProfiles()]);
+    await Promise.all([loadLoadouts(), loadRifles(), loadAttachments(), loadTypesOfMounts()]);
     getLoadoutCardData();
 });
 
@@ -45,23 +66,22 @@ async function loadAttachments() {
         .then(res => res.data as Attachment[]);
 }
 
-async function loadUserProfiles() {
-    userProfiles.value = await axios.get('/api/user_profiles/')
-        .then(res => res.data as UserProfile[]);
-}
+    async function loadTypesOfMounts() {
+        mounts.value = await axios.get('/api/types_of_mounts/')
+            .then(res => res.data as TypeOfMount[]);
+    }
 
 function getLoadoutCardData() {
     loadoutCardData.value = loadouts.value.map(loadout => {
         const rifle = rifles.value.find(r => r.id === loadout.rifle);
-        const creator = userProfiles.value.find(u => u.id === loadout.creator);
         return {
             id: loadout.id,
             title: loadout.title,
-            rifleName: rifle ? rifle.title : 'Неизвестно',
-            creatorName: creator ? creator.user_username : 'Неизвестно',
+            rifleName: rifle.title,
+            creatorName: loadout.creator,
             attachmentNames: loadout.attachments.map(id => {
                 const att = attachments.value.find(a => a.id === id);
-                return att ? att.title : 'Неизвестно';
+                return att.title;
             })
         };
     });
@@ -78,23 +98,26 @@ async function submitForm() {
         rifleIsEmpty.value = true;
         return;
     }
-    rifleIsEmpty.value = false;
+    rifleIsEmpty.value = false;   
 
-    if (form.value.creator === null) {
-        creatorIsEmpty.value = true;
-        return;
-    }
-    creatorIsEmpty.value = false;
+    const attachmentIds = Object.values(form.value.attachments)
+        .filter((id): id is number => id !== null);
+
+    const payload = {
+        title: form.value.title,
+        rifle: form.value.rifle,
+        attachments: attachmentIds,
+    };
 
     try {
         let response;
         if (editingId.value !== null) {
-            response = await axios.put(`/api/loadouts/${editingId.value}/`, form.value);
+            response = await axios.put(`/api/loadouts/${editingId.value}/`, payload);
             const index = loadouts.value.findIndex(l => l.id === editingId.value);
             if (index !== -1) loadouts.value[index] = response.data;
             alert('Сборка обновлена');
         } else {
-            response = await axios.post('/api/loadouts/', form.value);
+            response = await axios.post('/api/loadouts/', payload);
             loadouts.value.push(response.data);
             alert('Сборка создана');
         }
@@ -110,24 +133,29 @@ function resetForm() {
     form.value = {
         title: '',
         rifle: null,
-        creator: null,
-        attachments: []
+        attachments: {},
     };
     editingId.value = null;
     titleIsEmpty.value = false;
     rifleIsEmpty.value = false;
-    creatorIsEmpty.value = false;
 }
 
 function startEditing(id: number) {
     const original = loadouts.value.find(l => l.id === id);
     if (!original) return;
-    form.value = {
-        title: original.title,
-        rifle: original.rifle,
-        creator: original.creator,
-        attachments: original.attachments
-    };
+
+    form.value.title = original.title;
+    form.value.rifle = original.rifle;
+
+    const attachmentsMap: Record<number, number | null> = {};
+    original.attachments.forEach(attId => {
+        const att = attachments.value.find(a => a.id === attId);
+        if (att) {
+            attachmentsMap[att.type_of_mount] = attId;
+        }
+    });
+    form.value.attachments = attachmentsMap;
+
     editingId.value = original.id;
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -145,7 +173,7 @@ async function deleteLoadout(id: number) {
 </script>
 
 <template>
-    <form @submit.prevent="submitForm">
+    <form @submit.prevent="submitForm" v-if="builderPerm && secondPerm">
         <fieldset>
             <legend>{{ editingId !== null ? 'Редактирование сборки' : 'Создание новой сборки' }}</legend>
             <div class="mb-3">
@@ -162,24 +190,21 @@ async function deleteLoadout(id: number) {
                         </option>
                     </select>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label d-flex">Создатель<div class="text-danger ms-2" v-if="creatorIsEmpty">Обязательное поле</div></label>
-                    <select class="form-select" v-model="form.creator" required>
-                        <option :value="null" disabled>Выберите пользователя</option>
-                        <option v-for="profile in userProfiles" :key="profile.id" :value="profile.id">
-                            {{ profile.user_username }}
+            </div>
+            <div class="mb-3" v-if="rifleMountsAttachments.length > 0">
+                <label class="form-label">Типы креплений:</label>
+                <div v-for="item in rifleMountsAttachments" :key="item.mount.id">
+                    <label class="form-label small text-muted">{{ item.mount.title }}</label>
+                    <select class="form-select" v-model="form.attachments[item.mount.id]">
+                        <option :value="null">Не выбрано</option>
+                        <option v-for="attachment in item.availableAttachments" :key="attachment.id" :value="attachment.id">
+                            {{ attachment.title }}
                         </option>
                     </select>
                 </div>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Обвесы</label>
-                <select class="form-select" multiple size="5" v-model="form.attachments">
-                    <option v-for="attachment in attachments" :key="attachment.id" :value="attachment.id">
-                        {{ attachment.title }}
-                    </option>
-                </select>
-                <div class="form-text">Зажмите Ctrl для выбора нескольких элементов</div>
+            <div class="mb-3 text-muted" v-else-if="form.rifle !== null">
+                У выбранной винтовки нет типов креплений
             </div>
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary">

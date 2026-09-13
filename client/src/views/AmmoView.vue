@@ -3,6 +3,14 @@ import { ref, onBeforeMount } from 'vue';
 import axios from 'axios';
 import type { AmmoType } from '@/types/AmmoType.ts';
 import AmmoCard from '@/components/AmmoCard.vue';
+import { storeToRefs } from "pinia";
+import { useUserInfoStore } from "@/stores/user_info_store.ts";
+
+const userStore = useUserInfoStore();
+const {
+    moderatorPerm,
+    secondPerm,
+} = storeToRefs(userStore);
 
 const ammoList = ref<AmmoType[]>([]);
 const form = ref({
@@ -77,7 +85,7 @@ async function deleteAmmo(id: number) {
 </script>
 
 <template>
-    <form @submit.prevent="submitForm">
+    <form @submit.prevent="submitForm" v-if="moderatorPerm && secondPerm">
         <fieldset>
             <legend>{{ editingId !== null ? 'Редактирование калибра' : 'Создание нового калибра' }}</legend>
             <div class="mb-3">

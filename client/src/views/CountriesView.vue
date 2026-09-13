@@ -3,6 +3,14 @@ import { ref, onBeforeMount } from 'vue';
 import axios from 'axios';
 import type { Country } from '@/types/Country.ts';
 import CountryCard from '@/components/CountryCard.vue';
+import { storeToRefs } from "pinia";
+import { useUserInfoStore } from "@/stores/user_info_store.ts";
+
+const userStore = useUserInfoStore();
+const {
+    moderatorPerm,
+    secondPerm,
+} = storeToRefs(userStore);
 
 const countries = ref<Country[]>([]);
 const form = ref({
@@ -77,7 +85,7 @@ async function deleteCountry(id: number) {
 </script>
 
 <template>
-    <form @submit.prevent="submitForm">
+    <form @submit.prevent="submitForm" v-if="moderatorPerm && secondPerm">
         <fieldset>
             <legend>{{ editingId !== null ? 'Редактирование страны' : 'Создание новой страны' }}</legend>
             <div class="mb-3">

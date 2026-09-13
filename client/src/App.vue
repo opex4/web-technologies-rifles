@@ -6,10 +6,12 @@
     const userInfoStore = useUserInfoStore();
     const {
         isAuth,
+        moderatorPerm,
+        builderPerm,
     } = storeToRefs(userInfoStore);
 
     onBeforeMount(async () => {
-        userInfoStore.fetchUserInfo();
+        await userInfoStore.fetchUserInfo();
     })
 </script>
 
@@ -42,43 +44,29 @@
                 to="/conflicts"
             >Конфликты</router-link>
             <router-link 
+                v-if="builderPerm"
                 class="flex-sm-fill text-sm-center nav-link" 
                 exact-active-class="active" 
                 to="/types_of_mounts"
             >Типы креплений</router-link>
             <router-link 
+                v-if="builderPerm"
                 class="flex-sm-fill text-sm-center nav-link" 
                 exact-active-class="active" 
                 to="/attachments"
             >Обвесы</router-link>
             <router-link 
+                v-if="builderPerm"
                 class="flex-sm-fill text-sm-center nav-link" 
                 exact-active-class="active" 
                 to="/loadouts"
             >Сборки</router-link>
-            <!-- <li class="nav-item dropdown">
-                <a 
-                    class="nav-link dropdown-toggle" 
-                    data-bs-toggle="dropdown" 
-                    href="#" 
-                    role="button" 
-                    aria-expanded="false"
-                >Пользователь</a>
-                <ul class="dropdown-menu">
-                    <li>
-                        <a 
-                            class="dropdown-item"
-                            href="/admin"
-                        >Админка</a>
-                    </li>
-                </ul>
-            </li> -->
             <router-link 
                 class="flex-sm-fill text-sm-center nav-link" 
                 exact-active-class="active" 
                 to="/user"
             >Пользователь</router-link>
-            <a class="flex-sm-fill text-sm-center nav-link" href="/admin">Админка</a>
+            <a class="flex-sm-fill text-sm-center nav-link" href="/admin" v-if="moderatorPerm">Админка</a>
         </nav>
     </div>
     <div class="container">

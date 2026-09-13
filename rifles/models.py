@@ -1,5 +1,8 @@
 from django.db import models
 from django.db.models import ManyToManyField, ForeignKey
+from django.core.exceptions import ValidationError
+from django.dispatch import receiver
+from django.db.models.signals import m2m_changed
 
 
 # Create your models here.
@@ -52,7 +55,7 @@ class Constructor(models.Model):
 
 
 class TypeOfMount(models.Model):
-    title = models.TextField("Тип крепления", null=False)
+    title = models.TextField("Тип крепления", null=False, unique=True)
         
     class Meta:
         verbose_name = "Тип крепления"
@@ -98,7 +101,8 @@ class Loadout(models.Model):
     title = models.TextField("Название сборки", null=False)
     rifle = ForeignKey(Rifle, null=False, on_delete=models.CASCADE, verbose_name="Винтовка")
     creator = ForeignKey('general.UserProfile', null=False, on_delete=models.CASCADE, verbose_name="Создатель сборки")
-    attachments = ManyToManyField(Attachment, verbose_name="Обвесы", blank=True)
+    attachments = ManyToManyField(Attachment, verbose_name="Обвесы", blank=True, through='LoadoutAttachment')
+    
     
     class Meta:
         verbose_name = "Сборка"
@@ -106,3 +110,28 @@ class Loadout(models.Model):
 
     def __str__(self):
         return self.title
+    
+class LoadoutAttachment(models.Model):
+    loadout = models.ForeignKey(Loadout, on_delete=models.CASCADE)
+    attachment = models.ForeignKey(Attachment, on_delete=models.CASCADE)
+    
+    class Meta:
+        verbose_name = "Обвес в сборке"
+        verbose_name_plural = "Обвесы в сборке"
+        unique_together = [['loadout', 'attachment']]
+        
+    def __str__(self):
+        return f"{self.loadout.title} - {self.attachment.title}"
+        
+@receiver(m2m_changed, sender=Rifle.types_of_mounts.through)
+def clean_loadout_attachments(sender, instance, action, pk_set, **kwargs):
+    if action == 'post_remove' and pk_set:
+        LoadoutAttachment.objects.filter(
+            loadout__rifle=instance,
+            attachment__type_of_mount_id__in=pk_set
+        ).delete()
+        
+    elif action == 'post_clear':
+        LoadoutAttachment.objects.filter(
+            loadout__rifle=instance
+        ).delete()

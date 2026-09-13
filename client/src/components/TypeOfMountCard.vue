@@ -1,5 +1,13 @@
 <script setup lang="ts">
 import type { TypeOfMountCardData } from '@/types/TypeOfMountCardData.ts';
+import { storeToRefs } from "pinia";
+import { useUserInfoStore } from "@/stores/user_info_store.ts";
+
+const userStore = useUserInfoStore();
+const {
+    builderPerm,
+    secondPerm,
+} = storeToRefs(userStore);
 
 const props = defineProps<{
     mount: TypeOfMountCardData,
@@ -29,7 +37,7 @@ const onUpdateMount = () => {
                     <h2 class="d-flex justify-content-center align-items-center m-0">
                         {{ mount.title }}
                     </h2>
-                    <div class="d-flex justify-content-end">
+                    <div class="d-flex justify-content-end" v-if="builderPerm && secondPerm">
                         <button type="button" class="btn btn-success m-1" @click="onUpdateMount">Update</button>
                         <button type="button" class="btn btn-danger m-1" @click="onDelMount">Delete</button>
                     </div>

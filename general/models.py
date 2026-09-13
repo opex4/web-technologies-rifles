@@ -13,7 +13,7 @@ class UserProfile(models.Model):
         
     user = models.OneToOneField("auth.User", on_delete=models.CASCADE)
     type = models.TextField(choices=Type, null=False, verbose_name="Тип пользователя", default=Type.reader)
-    totp_key = models.CharField(max_length=128, null=True, blank=True)
+    totp_key = models.CharField(max_length=128, null=False, blank=True)
     
     class Meta:
         verbose_name = "Расширение пользователя"
