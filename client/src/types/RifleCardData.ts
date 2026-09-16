@@ -8,5 +8,5 @@ export interface RifleCardData {
     constructorNames: string[];
     conflictNames: string[];
     mountNames: string[];
-    // picture: string;
+    picture: string | null;
 }

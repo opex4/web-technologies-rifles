@@ -8,5 +8,5 @@ export interface Rifle {
     ammo_type: number;
     used_in_conflicts: number[];
     types_of_mounts: number[];
-    // picture: string;
+    picture: string | null;
 }

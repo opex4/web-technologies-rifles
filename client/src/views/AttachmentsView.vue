@@ -24,6 +24,8 @@ const form = ref({
 const editingId = ref<number | null>(null);
 const titleIsEmpty = ref(false);
 const mountIsEmpty = ref(false);
+const pictureRef = ref<HTMLInputElement>();
+const preview = ref<string | null>(null);
 
 onBeforeMount(async () => {
     await Promise.all([loadAttachments(), loadTypesOfMounts()]);
@@ -46,7 +48,8 @@ function getAttachmentCardData() {
         return {
             id: att.id,
             title: att.title,
-            mountName: mount ? mount.title : 'Неизвестно'
+            mountName: mount.title,
+            picture: att.picture,
         };
     });
 }
@@ -65,14 +68,25 @@ async function submitForm() {
     mountIsEmpty.value = false;
 
     try {
+        const formData = new FormData();
+        formData.append('title', form.value.title);
+        formData.append('type_of_mount', String(form.value.type_of_mount));
+
+        const file = pictureRef.value?.files?.[0];
+        if (file) {
+            formData.append('picture', file);
+        } else {
+            formData.append('picture', '');
+        }
+
         let response;
         if (editingId.value !== null) {
-            response = await axios.put(`/api/attachments/${editingId.value}/`, form.value);
+            response = await axios.put(`/api/attachments/${editingId.value}/`, formData);
             const index = attachments.value.findIndex(a => a.id === editingId.value);
             if (index !== -1) attachments.value[index] = response.data;
             alert('Обвес обновлён');
         } else {
-            response = await axios.post('/api/attachments/', form.value);
+            response = await axios.post('/api/attachments/', formData);
             attachments.value.push(response.data);
             alert('Обвес добавлен');
         }
@@ -89,6 +103,7 @@ function resetForm() {
     editingId.value = null;
     titleIsEmpty.value = false;
     mountIsEmpty.value = false;
+    onDelPicture();
 }
 
 function startEditing(id: number) {
@@ -98,6 +113,10 @@ function startEditing(id: number) {
         title: original.title,
         type_of_mount: original.type_of_mount
     };
+    preview.value = original.picture || null;
+    if (pictureRef.value) {
+        pictureRef.value.value = '';
+    }
     editingId.value = original.id;
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -111,6 +130,24 @@ async function deleteAttachment(id: number) {
         console.error('Ошибка:', error);
         alert('Не удалось удалить');
     }
+}
+
+function onFileChange() {
+    const file = pictureRef.value?.files?.[0];
+    if (preview.value) {
+        URL.revokeObjectURL(preview.value);
+    }
+    preview.value = file ? URL.createObjectURL(file) : null;
+}
+
+function onDelPicture() {
+    if (pictureRef.value) {
+        pictureRef.value.value = '';
+    }
+    if (preview.value) {
+        URL.revokeObjectURL(preview.value);
+    }
+    preview.value = null;
 }
 </script>
 
@@ -130,6 +167,16 @@ async function deleteAttachment(id: number) {
                         {{ mount.title }}
                     </option>
                 </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Загрузить картинку</label>
+                <input class="form-control" type="file" accept="image/*" ref="pictureRef" @change="onFileChange">
+                <div v-if="preview" class="mt-3 d-flex gap-2 align-items-end">
+                    <img :src="preview" alt="Картинка" class="mw-200">
+                    <div>
+                        <button type="button" class="btn btn-secondary" @click="onDelPicture">Удалить картинку</button>
+                    </div>
+                </div>
             </div>
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary">

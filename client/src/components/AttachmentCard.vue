@@ -46,8 +46,43 @@ const onUpdateAttachment = () => {
         </div>
         <div class="card-body">
             <p class="m-0">
-                Тип крепления: <strong>{{ attachment.mountName }}</strong>
+                Тип крепления: {{ attachment.mountName }}
             </p>
+        </div>
+        <div v-if="attachment.picture" class="card-body border-top d-flex flex-column align-items-center">
+            <span>Картинка:</span>
+            <img
+                :src="attachment.picture"
+                :alt="attachment.title"
+                class="img-fluid rounded mt-2 cp"
+                data-bs-toggle="modal"
+                :data-bs-target="'#attachmentImageModal-' + attachment.id"
+            >
+        </div>
+    </div>
+
+    <div class="modal" :id="'attachmentImageModal-' + attachment.id" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ attachment.title }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img :src="attachment.picture" class="img-fluid lg" :alt="attachment.title">
+                </div>
+            </div>
         </div>
     </div>
 </template>
+
+<style>
+.cp {
+    cursor: pointer;
+}
+
+.img-fluid.lg {
+    width: 100%;
+    height: 100%;
+}
+</style>

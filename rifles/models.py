@@ -88,6 +88,7 @@ class Rifle(models.Model):
 class Attachment(models.Model):
     title = models.TextField("Обвес", null=False)
     type_of_mount = ForeignKey(TypeOfMount, null=False, on_delete=models.CASCADE, verbose_name="Тип крепления")
+    picture = models.ImageField(upload_to='attachments', null=True, blank=True)
         
     class Meta:
         verbose_name = "Обвес"
