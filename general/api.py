@@ -21,6 +21,14 @@ class UserProfileViewSet(GenericViewSet):
             })
         return Response(date)
     
+    @action(url_path="list", methods=["GET"], detail=False)
+    def get_list(self, request, *args, **kwargs):
+        if not request.user.is_authenticated or request.user.userprofile.type != 'moderator':
+            return Response({"status": "failed"}, status=403)
+        else:
+            usernames = User.objects.values_list('username', flat=True)
+            return Response([{'username': name} for name in usernames])
+    
     @action(url_path="login", methods=["POST"], detail=False)
     def process_login(self, *args, **kwargs):
         class LoginSerialiser(serializers.Serializer):

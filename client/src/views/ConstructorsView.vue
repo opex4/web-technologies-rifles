@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, onBeforeMount } from 'vue';
+import { ref, onBeforeMount, computed } from 'vue';
 import axios from 'axios';
 import type { Constructor } from '@/types/Constructor.ts';
 import ConstructorCard from '@/components/ConstructorCard.vue';
 import { storeToRefs } from "pinia";
 import { useUserInfoStore } from "@/stores/user_info_store.ts";
+import SearchSelectLabel from "@/components/ui/SearchSelectLabel.vue";
 
 const userStore = useUserInfoStore();
 const {
@@ -20,9 +21,45 @@ const form = ref({
 });
 const editingId = ref<number | null>(null);
 
+const strTitles = computed(() => constructors.value.map(c => c.name));
+const filterTitle = ref<string>("");
+const filterBornDateFrom = ref<string>("");
+const filterBornDateTo = ref<string>("");
+const filterDieDateFrom = ref<string>("");
+const filterDieDateTo = ref<string>("");
+
 onBeforeMount(async () => {
     await loadConstructors();
 });
+
+const constructorsCardData = computed<ArmedConflict[]>(() => {
+    let data = constructors.value.map(constructor => {
+        return {
+            id: constructor.id,
+            name: constructor.name,
+            born_at: constructor.born_at,
+            died_at: constructor.died_at,
+        };
+    });
+
+    if (filterTitle.value) {
+        data = data.filter(c => c.name === filterTitle.value);
+    }
+    if (filterBornDateFrom.value) {
+        data = data.filter(c => c.born_at >= filterBornDateFrom.value);
+    }
+    if (filterBornDateTo.value) {
+        data = data.filter(c => c.born_at <= filterBornDateTo.value);
+    }
+    if (filterDieDateFrom.value) {
+        data = data.filter(c => c.died_at >= filterDieDateFrom.value);
+    }
+    if (filterDieDateTo.value) {
+        data = data.filter(c => c.died_at <= filterDieDateTo.value);
+    }
+
+    return data;
+})
 
 async function loadConstructors() {
     constructors.value = await axios.get('/api/constructors/')
@@ -37,22 +74,22 @@ async function submitForm() {
         };
 
         let response;
-        
+
         if (editingId.value !== null) {
             response = await axios.put(`/api/constructors/${editingId.value}/`, dataToSend);
-            
+
             const index = constructors.value.findIndex(c => c.id === editingId.value);
             if (index !== -1) {
                 constructors.value[index] = response.data;
             }
-            
+
             alert('Конструктор обновлен');
         } else {
             response = await axios.post('/api/constructors/', dataToSend);
             constructors.value.push(response.data);
             alert('Конструктор добавлен');
         }
-        
+
         resetForm();
     } catch (error) {
         console.error('Ошибка:', error);
@@ -72,15 +109,15 @@ function resetForm() {
 function startEditing(id: number) {
     const original = constructors.value.find(c => c.id === id);
     if (!original) return;
-    
+
     form.value = {
         name: original.name,
         born_at: original.born_at,
         died_at: original.died_at
     };
-    
+
     editingId.value = original.id;
-    
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -115,25 +152,44 @@ async function deleteConstructor(id: number) {
                 <button type="submit" class="btn btn-primary">
                     {{ editingId !== null ? 'Сохранить изменения' : 'Создать конструктора' }}
                 </button>
-                <button 
-                    v-if="editingId !== null" 
-                    type="button" 
-                    class="btn btn-secondary"
-                    @click="resetForm"
-                >
+                <button v-if="editingId !== null" type="button" class="btn btn-secondary" @click="resetForm">
                     Отмена
                 </button>
             </div>
         </fieldset>
     </form>
 
+    <fieldset class="mt-4 mb-2">
+        <legend>Фильтрация карточек</legend>
+        <label class="form-label d-flex">Название:</label>
+        <search-select-label :items="strTitles" v-model="filterTitle" />
+        <div class="mb-2"></div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Дата рождения от:</label>
+                <input type="date" class="form-control" v-model="filterBornDateFrom">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Дата рождения до:</label>
+                <input type="date" class="form-control" v-model="filterBornDateTo">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Дата смерти от:</label>
+                <input type="date" class="form-control" v-model="filterDieDateFrom">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Дата смерти до:</label>
+                <input type="date" class="form-control" v-model="filterDieDateTo">
+            </div>
+        </div>
+    </fieldset>
+
     <div class="d-flex flex-column gap-3 mt-4 mb-2">
-        <div v-for="constructor in constructors" :key="constructor.id">
-            <ConstructorCard 
-                :constructor="constructor"
-                @deleteConstructor="deleteConstructor"
-                @updateConstructor="startEditing"
-            />
+        <div v-for="constructor in constructorsCardData" :key="constructor.id">
+            <constructor-card :constructor="constructor" @deleteConstructor="deleteConstructor"
+                @updateConstructor="startEditing" />
         </div>
     </div>
 </template>

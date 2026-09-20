@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import axios from 'axios';
-import { onBeforeMount, ref } from 'vue';
+import { onBeforeMount, ref, watch, computed } from 'vue';
 import type { Attachment } from '@/types/Attachment.ts';
 import type { AttachmentCardData } from '@/types/AttachmentCardData.ts';
 import type { TypeOfMount } from '@/types/TypeOfMount.ts';
 import AttachmentCard from '@/components/AttachmentCard.vue';
 import { storeToRefs } from "pinia";
 import { useUserInfoStore } from "@/stores/user_info_store.ts";
+import SearchSelectIdLabel from "@/components/ui/SearchSelectIdLabel.vue";
+import SearchSelectLabel from "@/components/ui/SearchSelectLabel.vue";
 
 const userStore = useUserInfoStore();
 const {
@@ -15,7 +17,6 @@ const {
 } = storeToRefs(userStore);
 
 const attachments = ref([] as Attachment[]);
-const attachmentCardData = ref([] as AttachmentCardData[]);
 const typesOfMounts = ref([] as TypeOfMount[]);
 const form = ref({
     title: '',
@@ -27,9 +28,17 @@ const mountIsEmpty = ref(false);
 const pictureRef = ref<HTMLInputElement>();
 const preview = ref<string | null>(null);
 
+const searchSelectTypeOfMount = computed(() => typesOfMounts.value.map(m => ({ id: m.id, label: m.title })));
+
+const strTitles = computed(() => attachments.value.map(a => a.title));
+const strMounts = computed(() => typesOfMounts.value.map(m => m.title));
+const filterTitles = ref<string>("");
+const filterMounts = ref<string>("");
+const filterIsPicture = ref<boolean>(false);
+const filterIsNotPicture = ref<boolean>(false);
+
 onBeforeMount(async () => {
     await Promise.all([loadAttachments(), loadTypesOfMounts()]);
-    getAttachmentCardData();
 });
 
 async function loadAttachments() {
@@ -42,8 +51,8 @@ async function loadTypesOfMounts() {
         .then(res => res.data as TypeOfMount[]);
 }
 
-function getAttachmentCardData() {
-    attachmentCardData.value = attachments.value.map(att => {
+const attachmentCardData = computed<AttachmentCardData[]>(() => {
+    let data = attachments.value.map(att => {
         const mount = typesOfMounts.value.find(m => m.id === att.type_of_mount);
         return {
             id: att.id,
@@ -52,7 +61,22 @@ function getAttachmentCardData() {
             picture: att.picture,
         };
     });
-}
+
+    if (filterIsPicture.value) {
+        data = data.filter(a => a.picture);
+    }
+    if (filterIsNotPicture.value) {
+        data = data.filter(a => !a.picture);
+    }
+    if (filterTitles.value) {
+        data = data.filter(a => a.title === filterTitles.value);
+    }
+    if (filterMounts.value) {
+        data = data.filter(a => a.mountName === filterMounts.value);
+    }
+
+    return data;
+})
 
 async function submitForm() {
     if (form.value.title.trim() === '') {
@@ -91,7 +115,6 @@ async function submitForm() {
             alert('Обвес добавлен');
         }
         resetForm();
-        getAttachmentCardData();
     } catch (error) {
         console.error('Ошибка:', error);
         alert('Ошибка сохранения');
@@ -125,7 +148,6 @@ async function deleteAttachment(id: number) {
     try {
         await axios.delete(`/api/attachments/${id}/`);
         attachments.value = attachments.value.filter(a => a.id !== id);
-        getAttachmentCardData();
     } catch (error) {
         console.error('Ошибка:', error);
         alert('Не удалось удалить');
@@ -149,6 +171,18 @@ function onDelPicture() {
     }
     preview.value = null;
 }
+
+watch(filterIsPicture, (newValue, oldValue) => {
+    if (filterIsNotPicture.value && filterIsPicture.value) {
+        filterIsNotPicture.value = false;
+    }
+});
+
+watch(filterIsNotPicture, (newValue, oldValue) => {
+    if (filterIsNotPicture.value && filterIsPicture.value) {
+        filterIsPicture.value = false;
+    }
+});
 </script>
 
 <template>
@@ -156,17 +190,14 @@ function onDelPicture() {
         <fieldset>
             <legend>{{ editingId !== null ? 'Редактирование обвеса' : 'Создание нового обвеса' }}</legend>
             <div class="mb-3">
-                <label class="form-label d-flex">Название<div class="text-danger ms-2" v-if="titleIsEmpty">Обязательное поле</div></label>
+                <label class="form-label d-flex">Название<div class="text-danger ms-2" v-if="titleIsEmpty">Обязательное
+                        поле</div></label>
                 <input type="text" class="form-control" placeholder="Введите название" v-model="form.title" required>
             </div>
             <div class="mb-3">
-                <label class="form-label d-flex">Тип крепления<div class="text-danger ms-2" v-if="mountIsEmpty">Обязательное поле</div></label>
-                <select class="form-select" v-model="form.type_of_mount" required>
-                    <option :value="null" disabled>Выберите тип крепления</option>
-                    <option v-for="mount in typesOfMounts" :key="mount.id" :value="mount.id">
-                        {{ mount.title }}
-                    </option>
-                </select>
+                <label class="form-label d-flex">Тип крепления<div class="text-danger ms-2" v-if="mountIsEmpty">
+                    Обязательное поле</div></label>
+                <search-select-id-label :items="searchSelectTypeOfMount" v-model="form.type_of_mount" />
             </div>
             <div class="mb-3">
                 <label class="form-label">Загрузить картинку</label>
@@ -182,18 +213,33 @@ function onDelPicture() {
                 <button type="submit" class="btn btn-primary">
                     {{ editingId !== null ? 'Сохранить изменения' : 'Создать обвес' }}
                 </button>
-                <button v-if="editingId !== null" type="button" class="btn btn-secondary" @click="resetForm">Отмена</button>
+                <button v-if="editingId !== null" type="button" class="btn btn-secondary"
+                    @click="resetForm">Отмена</button>
             </div>
         </fieldset>
     </form>
 
+    <fieldset class="mt-4 mb-2">
+        <legend>Фильтрация карточек</legend>
+        <label class="form-label d-flex">Название:</label>
+        <search-select-label :items="strTitles" v-model="filterTitles" />
+        <label class="form-label d-flex">Крепление:</label>
+        <search-select-label :items="strMounts" v-model="filterMounts" />
+        <label class="form-label d-flex">Картинка:</label>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" v-model="filterIsPicture">
+            <label class="form-check-label">С картинкой</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" v-model="filterIsNotPicture">
+            <label class="form-check-label">Без картинки</label>
+        </div>
+    </fieldset>
+
     <div class="d-flex flex-column gap-3 mt-4 mb-2">
         <div v-for="attachment in attachmentCardData" :key="attachment.id">
-            <attachment-card 
-                :attachment="attachment"
-                @deleteAttachment="deleteAttachment"
-                @updateAttachment="startEditing"
-            />
+            <attachment-card :attachment="attachment" @deleteAttachment="deleteAttachment"
+                @updateAttachment="startEditing" />
         </div>
     </div>
 </template>

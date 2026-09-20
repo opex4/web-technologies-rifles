@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, onBeforeMount } from 'vue';
+import { ref, onBeforeMount, computed } from 'vue';
 import axios from 'axios';
 import type { Country } from '@/types/Country.ts';
 import CountryCard from '@/components/CountryCard.vue';
 import { storeToRefs } from "pinia";
 import { useUserInfoStore } from "@/stores/user_info_store.ts";
+import SearchSelectLabel from "@/components/ui/SearchSelectLabel.vue";
 
 const userStore = useUserInfoStore();
 const {
@@ -18,9 +19,27 @@ const form = ref({
 });
 const editingId = ref<number | null>(null);
 
+const strTitles = computed(() => countries.value.map(c => c.name));
+const filterTitle = ref<string>("");
+
 onBeforeMount(async () => {
     await loadCountries();
 });
+
+const countriesCardData = computed<Country[]>(() => {
+        let data = countries.value.map(country => {
+        return {
+            id: country.id,
+            name: country.name,
+        };
+    });
+
+    if (filterTitle.value) {
+        data = data.filter(c => c.name === filterTitle.value);
+    }
+
+    return data;
+})
 
 async function loadCountries() {
     countries.value = await axios.get('/api/countries/')
@@ -108,8 +127,14 @@ async function deleteCountry(id: number) {
         </fieldset>
     </form>
 
+    <fieldset class="mt-4 mb-2">
+        <legend>Фильтрация карточек</legend>
+        <label class="form-label d-flex">Название:</label>
+        <search-select-label :items="strTitles" v-model="filterTitle" />
+    </fieldset>
+
     <div class="d-flex flex-column gap-3 mt-4 mb-2">
-        <div v-for="country in countries" :key="country.id">
+        <div v-for="country in countriesCardData" :key="country.id">
             <CountryCard 
                 :country="country"
                 @deleteCountry="deleteCountry"

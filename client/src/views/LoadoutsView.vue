@@ -9,18 +9,33 @@ import type { TypeOfMount } from '@/types/TypeOfMount.ts';
 import LoadoutCard from '@/components/LoadoutCard.vue';
 import { storeToRefs } from "pinia";
 import { useUserInfoStore } from "@/stores/user_info_store.ts";
+import SearchSelectIdLabel from "@/components/ui/SearchSelectIdLabel.vue";
+import SearchSelectLabel from "@/components/ui/SearchSelectLabel.vue";
 
 const userStore = useUserInfoStore();
 const {
     builderPerm,
     secondPerm,
+    moderatorPerm,
 } = storeToRefs(userStore);
 
 const loadouts = ref([] as Loadout[]);
-const loadoutCardData = ref([] as LoadoutCardData[]);
 const rifles = ref([] as Rifle[]);
 const attachments = ref([] as Attachment[]);
 const mounts = ref([] as TypeOfMount[]);
+interface UserName {
+    username: string;
+}
+const usernames = ref([] as UserName[]);
+
+const strCreators = computed(() => usernames.value.map(u => u.username));
+const strRifles = computed(() => rifles.value.map(r => r.title));
+const strAtts = computed(() => attachments.value.map(a => a.title));
+const strTitles = computed(() => loadouts.value.map(l => l.title));
+const filterCreator = ref<string>("");
+const filterRifle = ref<string>("");
+const filterAtt = ref<string>("");
+const filterTitle = ref<string>("");
 
 const rifleMountsAttachments = computed(() => {
     const rifle = rifles.value.find(r => r.id === form.value.rifle);
@@ -30,11 +45,18 @@ const rifleMountsAttachments = computed(() => {
         const mount = mounts.value.find(m => m.id === mountId);
         if (!mount) return null;
         return {
-            mount,
-            availableAttachments: attachments.value.filter(a => a.type_of_mount === mountId),
+            mountId: mount.id,
+            mountTitle: mount.title,
+            availableAttachments: attachments.value
+                .filter(a => a.type_of_mount === mountId)
+                .map(a => ({ id: a.id, label: a.title })),
         };
     }).filter(item => item !== null);
 });
+
+const searchSelectRifle = computed(() =>
+    rifles.value.map(r => ({ id: r.id, label: r.title }))
+);
 
 const form = ref({
     title: '',
@@ -47,8 +69,45 @@ const titleIsEmpty = ref(false);
 const rifleIsEmpty = ref(false);
 
 onBeforeMount(async () => {
-    await Promise.all([loadLoadouts(), loadRifles(), loadAttachments(), loadTypesOfMounts()]);
-    getLoadoutCardData();
+    if (moderatorPerm.value) {
+        await loadUserNames();
+    }
+    await Promise.all([loadAttachments(), loadTypesOfMounts(), loadLoadouts(), loadRifles()]);
+});
+
+const loadoutCardData = computed<LoadoutCardData[]>(() => {
+    if (loadouts.value.length === 0 || rifles.value.length === 0 || attachments.value.length === 0 || mounts.value.length === 0) {
+        return [];
+    }
+
+    let data = loadouts.value.map(loadout => {
+        const rifle = rifles.value.find(r => r.id === loadout.rifle);
+        return {
+            id: loadout.id,
+            title: loadout.title,
+            rifleName: rifle.title,
+            creatorName: loadout.creator,
+            attachmentNames: loadout.attachments.map(id => {
+                const att = attachments.value.find(a => a.id === id);
+                return att?.title;
+            })
+        };
+    });
+
+    if (filterCreator.value) {
+        data = data.filter(l => l.creatorName === filterCreator.value);
+    }
+    if (filterRifle.value) {
+        data = data.filter(l => l.rifleName === filterRifle.value);
+    }
+    if (filterAtt.value) {
+        data = data.filter(l => l.attachmentNames.includes(filterAtt.value));
+    }
+    if (filterTitle.value) {
+        data = data.filter(l => l.title === filterTitle.value);
+    }
+
+    return data;
 });
 
 async function loadLoadouts() {
@@ -66,25 +125,14 @@ async function loadAttachments() {
         .then(res => res.data as Attachment[]);
 }
 
-    async function loadTypesOfMounts() {
-        mounts.value = await axios.get('/api/types_of_mounts/')
-            .then(res => res.data as TypeOfMount[]);
-    }
+async function loadTypesOfMounts() {
+    mounts.value = await axios.get('/api/types_of_mounts/')
+        .then(res => res.data as TypeOfMount[]);
+}
 
-function getLoadoutCardData() {
-    loadoutCardData.value = loadouts.value.map(loadout => {
-        const rifle = rifles.value.find(r => r.id === loadout.rifle);
-        return {
-            id: loadout.id,
-            title: loadout.title,
-            rifleName: rifle.title,
-            creatorName: loadout.creator,
-            attachmentNames: loadout.attachments.map(id => {
-                const att = attachments.value.find(a => a.id === id);
-                return att.title;
-            })
-        };
-    });
+async function loadUserNames() {
+    usernames.value = await axios.get('/api/users/list/')
+        .then(res => res.data as UserName[]);
 }
 
 async function submitForm() {
@@ -98,7 +146,7 @@ async function submitForm() {
         rifleIsEmpty.value = true;
         return;
     }
-    rifleIsEmpty.value = false;   
+    rifleIsEmpty.value = false;
 
     const attachmentIds = Object.values(form.value.attachments)
         .filter((id): id is number => id !== null);
@@ -122,7 +170,6 @@ async function submitForm() {
             alert('Сборка создана');
         }
         resetForm();
-        getLoadoutCardData();
     } catch (error) {
         console.error('Ошибка:', error);
         alert('Ошибка сохранения');
@@ -164,11 +211,14 @@ async function deleteLoadout(id: number) {
     try {
         await axios.delete(`/api/loadouts/${id}/`);
         loadouts.value = loadouts.value.filter(l => l.id !== id);
-        getLoadoutCardData();
     } catch (error) {
         console.error('Ошибка:', error);
         alert('Не удалось удалить');
     }
+}
+
+function onRifleChange() {
+    form.value.attachments = {};
 }
 </script>
 
@@ -177,30 +227,22 @@ async function deleteLoadout(id: number) {
         <fieldset>
             <legend>{{ editingId !== null ? 'Редактирование сборки' : 'Создание новой сборки' }}</legend>
             <div class="mb-3">
-                <label class="form-label d-flex">Название<div class="text-danger ms-2" v-if="titleIsEmpty">Обязательное поле</div></label>
+                <label class="form-label d-flex">Название<div class="text-danger ms-2" v-if="titleIsEmpty">Обязательное
+                        поле</div></label>
                 <input type="text" class="form-control" placeholder="Введите название" v-model="form.title" required>
             </div>
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label d-flex">Винтовка<div class="text-danger ms-2" v-if="rifleIsEmpty">Обязательное поле</div></label>
-                    <select class="form-select" v-model="form.rifle" required>
-                        <option :value="null" disabled>Выберите винтовку</option>
-                        <option v-for="rifle in rifles" :key="rifle.id" :value="rifle.id">
-                            {{ rifle.title }}
-                        </option>
-                    </select>
-                </div>
+            <div class="mb-3">
+                <label class="form-label d-flex">Винтовка<div class="text-danger ms-2" v-if="rifleIsEmpty">
+                        Обязательное поле</div></label>
+                <search-select-id-label :items="searchSelectRifle" v-model="form.rifle"
+                    @update:modelValue="onRifleChange" />
             </div>
             <div class="mb-3" v-if="rifleMountsAttachments.length > 0">
                 <label class="form-label">Типы креплений:</label>
-                <div v-for="item in rifleMountsAttachments" :key="item.mount.id">
-                    <label class="form-label small text-muted">{{ item.mount.title }}</label>
-                    <select class="form-select" v-model="form.attachments[item.mount.id]">
-                        <option :value="null">Не выбрано</option>
-                        <option v-for="attachment in item.availableAttachments" :key="attachment.id" :value="attachment.id">
-                            {{ attachment.title }}
-                        </option>
-                    </select>
+                <div v-for="item in rifleMountsAttachments" :key="item.mountId">
+                    <label class="form-label small text-muted">{{ item.mountTitle }}</label>
+                    <search-select-id-label :items="item.availableAttachments"
+                        v-model="form.attachments[item.mountId]" />
                 </div>
             </div>
             <div class="mb-3 text-muted" v-else-if="form.rifle !== null">
@@ -210,18 +252,25 @@ async function deleteLoadout(id: number) {
                 <button type="submit" class="btn btn-primary">
                     {{ editingId !== null ? 'Сохранить изменения' : 'Создать сборку' }}
                 </button>
-                <button v-if="editingId !== null" type="button" class="btn btn-secondary" @click="resetForm">Отмена</button>
+                <button v-if="editingId !== null" type="button" class="btn btn-secondary"
+                    @click="resetForm">Отмена</button>
             </div>
         </fieldset>
     </form>
-
+    <fieldset class="mt-4 mb-2">
+        <legend>Фильтрация карточек</legend>
+        <label class="form-label d-flex">Название:</label>
+        <search-select-label :items="strTitles" v-model="filterTitle" />
+        <label class="form-label d-flex mt-2" v-if="moderatorPerm">Создатель:</label>
+        <search-select-label :items="strCreators" v-model="filterCreator" />
+        <label class="form-label d-flex mt-2">Винтовка:</label>
+        <search-select-label :items="strRifles" v-model="filterRifle" />
+        <label class="form-label d-flex mt-2">Обвес:</label>
+        <search-select-label :items="strAtts" v-model="filterAtt" />
+    </fieldset>
     <div class="d-flex flex-column gap-3 mt-4 mb-2">
         <div v-for="loadout in loadoutCardData" :key="loadout.id">
-            <loadout-card 
-                :loadout="loadout"
-                @deleteLoadout="deleteLoadout"
-                @updateLoadout="startEditing"
-            />
+            <loadout-card :loadout="loadout" @deleteLoadout="deleteLoadout" @updateLoadout="startEditing" />
         </div>
     </div>
 </template>

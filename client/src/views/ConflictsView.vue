@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, onBeforeMount } from 'vue';
+import { ref, onBeforeMount, computed } from 'vue';
 import axios from 'axios';
 import type { ArmedConflict } from '@/types/ArmedConflict.ts';
 import ConflictCard from '@/components/ConflictCard.vue';
 import { storeToRefs } from "pinia";
 import { useUserInfoStore } from "@/stores/user_info_store.ts";
+import SearchSelectLabel from "@/components/ui/SearchSelectLabel.vue";
 
 const userStore = useUserInfoStore();
 const {
@@ -20,6 +21,11 @@ const form = ref({
 });
 const editingId = ref<number | null>(null);
 
+const strTitles = computed(() => conflicts.value.map(l => l.title));
+const filterTitle = ref<string>("");
+const filterDateFrom = ref<string>("");
+const filterDateTo = ref<string>("");
+
 onBeforeMount(async () => {
     await loadConflicts();
 });
@@ -29,6 +35,29 @@ async function loadConflicts() {
         .then(res => res.data as ArmedConflict[]);
 }
 
+const conflictsCardData = computed<ArmedConflict[]>(() => {
+    let data = conflicts.value.map(conflict => {
+        return {
+            id: conflict.id,
+            title: conflict.title,
+            started_at: conflict.started_at,
+            finished_at: conflict.finished_at,
+        };
+    });
+
+    if (filterTitle.value) {
+        data = data.filter(c => c.title === filterTitle.value);
+    }
+    if (filterDateFrom.value) {
+        data = data.filter(c => c.started_at >= filterDateFrom.value);
+    }
+    if (filterDateTo.value) {
+        data = data.filter(c => c.started_at <= filterDateTo.value);
+    }
+
+    return data;
+})
+
 async function submitForm() {
     try {
         const dataToSend = {
@@ -37,22 +66,22 @@ async function submitForm() {
         };
 
         let response;
-        
+
         if (editingId.value !== null) {
             response = await axios.put(`/api/armed_conflicts/${editingId.value}/`, dataToSend);
-            
+
             const index = conflicts.value.findIndex(c => c.id === editingId.value);
             if (index !== -1) {
                 conflicts.value[index] = response.data;
             }
-            
+
             alert('Конфликт обновлен');
         } else {
             response = await axios.post('/api/armed_conflicts/', dataToSend);
             conflicts.value.push(response.data);
             alert('Конфликт добавлен');
         }
-        
+
         resetForm();
     } catch (error) {
         console.error('Ошибка:', error);
@@ -72,15 +101,15 @@ function resetForm() {
 function startEditing(id: number) {
     const original = conflicts.value.find(c => c.id === id);
     if (!original) return;
-    
+
     form.value = {
         title: original.title,
         started_at: original.started_at,
         finished_at: original.finished_at
     };
-    
+
     editingId.value = original.id;
-    
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -115,25 +144,33 @@ async function deleteConflict(id: number) {
                 <button type="submit" class="btn btn-primary">
                     {{ editingId !== null ? 'Сохранить изменения' : 'Создать конфликт' }}
                 </button>
-                <button 
-                    v-if="editingId !== null" 
-                    type="button" 
-                    class="btn btn-secondary"
-                    @click="resetForm"
-                >
+                <button v-if="editingId !== null" type="button" class="btn btn-secondary" @click="resetForm">
                     Отмена
                 </button>
             </div>
         </fieldset>
     </form>
 
+    <fieldset class="mt-4 mb-2">
+        <legend>Фильтрация карточек</legend>
+        <label class="form-label d-flex">Название:</label>
+        <search-select-label :items="strTitles" v-model="filterTitle" />
+        <div class="mb-2"></div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Дата начала от:</label>
+                <input type="date" class="form-control" v-model="filterDateFrom">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Дата начала до:</label>
+                <input type="date" class="form-control" v-model="filterDateTo">
+            </div>
+        </div>
+    </fieldset>
+
     <div class="d-flex flex-column gap-3 mt-4 mb-2">
-        <div v-for="conflict in conflicts" :key="conflict.id">
-            <ConflictCard 
-                :conflict="conflict"
-                @deleteConflict="deleteConflict"
-                @updateConflict="startEditing"
-            />
+        <div v-for="conflict in conflictsCardData" :key="conflict.id">
+            <ConflictCard :conflict="conflict" @deleteConflict="deleteConflict" @updateConflict="startEditing" />
         </div>
     </div>
 </template>

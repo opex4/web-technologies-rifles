@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import axios from 'axios';
-import { onBeforeMount, ref } from "vue";
+import { onBeforeMount, ref, computed, watch } from 'vue';
 import type { AmmoType } from "@/types/AmmoType.ts";
 import type { Constructor } from "@/types/Constructor.ts";
 import type { ArmedConflict } from "@/types/ArmedConflict.ts";
@@ -11,13 +11,14 @@ import type { TypeOfMount } from "@/types/TypeOfMount.ts";
 import RifleCard from "@/components/RifleCard.vue";
 import { storeToRefs } from "pinia";
 import { useUserInfoStore } from "@/stores/user_info_store.ts";
+import SearchSelectIdLabel from "@/components/ui/SearchSelectIdLabel.vue";
+import SearchSelectLabel from "@/components/ui/SearchSelectLabel.vue";
 
 const countries = ref([] as Country[]);
 const ammoTypes = ref([] as AmmoType[]);
 const constructors = ref([] as Constructor[]);
 const armedConflicts = ref([] as ArmedConflict[]);
 const rifles = ref([] as Rifle[]);
-const rifleCardData = ref([] as RifleCardData[]);
 const typesOfMounts = ref([] as TypeOfMount[]);
 const form = ref({
     title: '',
@@ -41,13 +42,75 @@ const {
 const pictureRef = ref<HTMLInputElement>();
 const preview = ref<string | null>(null);
 
+const filterTitle = ref<string>("");
+const filterDateFrom = ref<string>("");
+const filterDateTo = ref<string>("");
+const filterAmmo = ref<string>("");
+const filterCountry = ref<string>("");
+const filterConstructor = ref<string>("");
+const filterConflict = ref<string>("");
+const filterMount = ref<string>("");
+const filterHasPicture = ref<boolean>(false);
+const filterNoPicture = ref<boolean>(false);
+
+const titlesStr = computed(() => rifles.value.map(r => r.title));
+const ammoStr = computed(() => ammoTypes.value.map(a => a.title));
+const countryStr = computed(() => countries.value.map(c => c.name));
+const constructorStr = computed(() => constructors.value.map(c => c.name));
+const conflictStr = computed(() => armedConflicts.value.map(c => c.title));
+const mountStr = computed(() => typesOfMounts.value.map(m => m.title));
+
+const searchSelectAmmo = computed(() =>
+    ammoTypes.value.map(a => ({ id: a.id, label: a.title }))
+);
+const searchSelectCountry = computed(() =>
+    countries.value.map(c => ({ id: c.id, label: c.name }))
+);
+
+const searchConstructor = ref<string>("");
+const searchMount = ref<string>("");
+const searchConflict = ref<string>("");
+const filteredConstructors = computed(() => {
+    const search = searchConstructor.value.toLowerCase();
+    return constructors.value.filter(c => 
+        form.value.constructors.includes(c.id) || 
+        c.name.toLowerCase().includes(search)
+    );
+});
+const filteredMounts = computed(() => {
+    const search = searchMount.value.toLowerCase();
+    return typesOfMounts.value.filter(m => 
+        form.value.types_of_mounts.includes(m.id) || 
+        m.title.toLowerCase().includes(search)
+    );
+});
+const filteredConflicts = computed(() => {
+    const search = searchConflict.value.toLowerCase();
+    return armedConflicts.value.filter(c => 
+        form.value.used_in_conflicts.includes(c.id) || 
+        c.title.toLowerCase().includes(search)
+    );
+});
+
+watch(filterHasPicture, (newValue) => {
+    if (newValue && filterNoPicture.value) filterNoPicture.value = false;
+});
+watch(filterNoPicture, (newValue) => {
+    if (newValue && filterHasPicture.value) filterHasPicture.value = false;
+});
+
 onBeforeMount(async () => {
     await loadAll();
-    await getRifleCardData();
 })
 
-async function getRifleCardData() {
-    rifleCardData.value = rifles.value.map(rifle => {
+const rifleCardData = computed<RifleCardData[]>(() => {
+    if (rifles.value.length === 0 || countries.value.length === 0 || ammoTypes.value.length === 0) {
+        return [];
+    }
+    if (constructors.value.length === 0 || armedConflicts.value.length === 0 || typesOfMounts.value.length === 0) {
+        return [];
+    }
+    let data = rifles.value.map(rifle => {
         const ammo = ammoTypes.value.find(a => a.id === rifle.ammo_type);
         const country = countries.value.find(c => c.id === rifle.country_of_origin);
 
@@ -56,21 +119,54 @@ async function getRifleCardData() {
             title: rifle.title,
             description: rifle.description,
             created_at: rifle.created_at,
-            ammoName: ammo!.title,
-            countryName: country!.name,
+            ammoName: ammo.title,
+            countryName: country.name,
             constructorNames: rifle.constructors.map(id =>
-                constructors.value.find(c => c.id === id)!.name
+                constructors.value.find(c => c.id === id).name
             ),
             conflictNames: rifle.used_in_conflicts.map(id =>
-                armedConflicts.value.find(c => c.id === id)!.title
+                armedConflicts.value.find(c => c.id === id).title
             ),
             mountNames: rifle.types_of_mounts.map(id =>
-                typesOfMounts.value.find(m => m.id === id)!.title
+                typesOfMounts.value.find(m => m.id === id).title
             ),
             picture: rifle.picture,
         };
     });
-}
+
+    if (filterTitle.value) {
+        data = data.filter(r => r.title === filterTitle.value);
+    }
+    if (filterDateFrom.value) {
+        data = data.filter(r => r.created_at >= filterDateFrom.value);
+    }
+    if (filterDateTo.value) {
+        data = data.filter(r => r.created_at <= filterDateTo.value);
+    }
+    if (filterAmmo.value) {
+        data = data.filter(r => r.ammoName === filterAmmo.value);
+    }
+    if (filterCountry.value) {
+        data = data.filter(r => r.countryName === filterCountry.value);
+    }
+    if (filterConstructor.value) {
+        data = data.filter(r => r.constructorNames.includes(filterConstructor.value));
+    }
+    if (filterConflict.value) {
+        data = data.filter(r => r.conflictNames.includes(filterConflict.value));
+    }
+    if (filterMount.value) {
+        data = data.filter(r => r.mountNames.includes(filterMount.value));
+    }
+    if (filterHasPicture.value) {
+        data = data.filter(r => r.picture);
+    }
+    if (filterNoPicture.value) {
+        data = data.filter(r => !r.picture);
+    }
+
+    return data;
+});
 
 async function loadAll() {
     await loadCountries();
@@ -166,7 +262,6 @@ async function submitForm() {
         }
 
         resetForm();
-        getRifleCardData();
     } catch (error) {
         console.error('Ошибка:', error);
         alert('Ошибка добавления или обновления винтовки');
@@ -220,7 +315,6 @@ async function deleteRifle(id: number) {
     try {
         await axios.delete(`/api/rifles/${id}/`);
         rifles.value = rifles.value.filter(r => r.id !== id);
-        getRifleCardData();
     } catch (error) {
         console.error('Ошибка при удалении:', error);
         alert('Не удалось удалить винтовку');
@@ -267,29 +361,21 @@ function onDelPicture() {
                 <div class="col-md-6">
                     <label class="form-label d-flex">Патрон<div class="text-danger ms-2" v-if="ammoIsEmpty">Обязательное
                             поле</div></label>
-                    <select class="form-select" v-model="form.ammo_type">
-                        <option :value="null" disabled>Выберите патрон</option>
-                        <option v-for="ammo in ammoTypes" :key="ammo.id" :value="ammo.id">
-                            {{ ammo.title }}
-                        </option>
-                    </select>
+                    <search-select-id-label :items="searchSelectAmmo" v-model="form.ammo_type" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label d-flex">Страна происхождения<div class="text-danger ms-2"
                             v-if="countryIsEmpty">Обязательное поле</div></label>
-                    <select class="form-select" v-model="form.country_of_origin">
-                        <option :value="null" disabled>Выберите страну</option>
-                        <option v-for="country in countries" :key="country.id" :value="country.id">
-                            {{ country.name }}
-                        </option>
-                    </select>
+                    <search-select-id-label :items="searchSelectCountry" v-model="form.country_of_origin" />
                 </div>
             </div>
             <div class="mb-3">
                 <label class="form-label d-flex">Конструкторы<div class="text-danger ms-2" v-if="constructorIsEmpty">
                         Обязательное поле</div></label>
+                <input type="text" class="form-control mb-2" placeholder="Поиск конструктора..."
+                    v-model="searchConstructor" />
                 <select class="form-select" multiple size="5" v-model="form.constructors">
-                    <option v-for="constructor in constructors" :key="constructor.id" :value="constructor.id">
+                    <option v-for="constructor in filteredConstructors" :key="constructor.id" :value="constructor.id">
                         {{ constructor.name }}
                     </option>
                 </select>
@@ -297,8 +383,10 @@ function onDelPicture() {
             </div>
             <div class="mb-3">
                 <label class="form-label">Типы креплений</label>
+                <input type="text" class="form-control mb-2" placeholder="Поиск крепления..."
+                    v-model="searchMount" />
                 <select class="form-select" multiple size="5" v-model="form.types_of_mounts">
-                    <option v-for="mount in typesOfMounts" :key="mount.id" :value="mount.id">
+                    <option v-for="mount in filteredMounts" :key="mount.id" :value="mount.id">
                         {{ mount.title }}
                     </option>
                 </select>
@@ -306,8 +394,10 @@ function onDelPicture() {
             </div>
             <div class="mb-3">
                 <label class="form-label">Применено в конфликтах</label>
+                <input type="text" class="form-control mb-2" placeholder="Поиск конфликта..."
+                    v-model="searchConflict" />
                 <select class="form-select" multiple size="5" v-model="form.used_in_conflicts">
-                    <option v-for="conflict in armedConflicts" :key="conflict.id" :value="conflict.id">
+                    <option v-for="conflict in filteredConflicts" :key="conflict.id" :value="conflict.id">
                         {{ conflict.title }}
                     </option>
                 </select>
@@ -333,6 +423,45 @@ function onDelPicture() {
             </div>
         </fieldset>
     </form>
+
+    <fieldset class="mt-4 mb-2">
+        <legend>Фильтрация карточек</legend>
+        <label class="form-label d-flex mt-2">Название:</label>
+        <search-select-label :items="titlesStr" v-model="filterTitle" />
+        <label class="form-label d-flex mt-2">Страна:</label>
+        <search-select-label :items="countryStr" v-model="filterCountry" />
+
+        <div class="mb-2"></div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Дата создания от:</label>
+                <input type="date" class="form-control" v-model="filterDateFrom">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Дата создания до:</label>
+                <input type="date" class="form-control" v-model="filterDateTo">
+            </div>
+        </div>
+
+        <label class="form-label d-flex mt-2">Патрон:</label>
+        <search-select-label :items="ammoStr" v-model="filterAmmo" />
+        <label class="form-label d-flex mt-2">Конструктор:</label>
+        <search-select-label :items="constructorStr" v-model="filterConstructor" />
+        <label class="form-label d-flex mt-2">Тип крепления:</label>
+        <search-select-label :items="mountStr" v-model="filterMount" />
+        <label class="form-label d-flex mt-2">Применено в конфликте:</label>
+        <search-select-label :items="conflictStr" v-model="filterConflict" />
+
+        <label class="form-label d-flex mt-2">Картинка:</label>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" v-model="filterHasPicture">
+            <label class="form-check-label">С картинкой</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" v-model="filterNoPicture">
+            <label class="form-check-label">Без картинки</label>
+        </div>
+    </fieldset>
 
     <div class="d-flex flex-column gap-3 mt-4 mb-2">
         <div v-for="rifle in rifleCardData" :key="rifle.id">

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import axios from 'axios';
-import { onBeforeMount, ref } from 'vue';
+import { onBeforeMount, ref, computed } from 'vue';
 import type { TypeOfMount } from '@/types/TypeOfMount.ts';
 import type { TypeOfMountCardData } from '@/types/TypeOfMountCardData.ts';
 import TypeOfMountCard from '@/components/TypeOfMountCard.vue';
 import { storeToRefs } from "pinia";
 import { useUserInfoStore } from "@/stores/user_info_store.ts";
+import SearchSelectLabel from "@/components/ui/SearchSelectLabel.vue";
 
 const userStore = useUserInfoStore();
 const {
@@ -14,14 +15,15 @@ const {
 } = storeToRefs(userStore);
 
 const mounts = ref([] as TypeOfMount[]);
-const mountCardData = ref([] as TypeOfMountCardData[]);
 const form = ref({ title: '' });
 const editingId = ref<number | null>(null);
 const titleIsEmpty = ref(false);
 
+const strTitles = computed(() => mounts.value.map(m => m.title));
+const filterTitle = ref<string>("");
+
 onBeforeMount(async () => {
     await loadMounts();
-    getMountCardData();
 });
 
 async function loadMounts() {
@@ -29,12 +31,18 @@ async function loadMounts() {
         .then(res => res.data as TypeOfMount[]);
 }
 
-function getMountCardData() {
-    mountCardData.value = mounts.value.map(mount => ({
+const mountCardData = computed<TypeOfMountCardData[]>(() => {
+    let data = mounts.value.map(mount => ({
         id: mount.id,
         title: mount.title
     }));
-}
+
+    if (filterTitle.value) {
+        data = data.filter(m => m.title === filterTitle.value);
+    }
+
+    return data;
+});
 
 async function submitForm() {
     if (form.value.title.trim() === '') {
@@ -56,7 +64,6 @@ async function submitForm() {
             alert('Тип крепления добавлен');
         }
         resetForm();
-        getMountCardData();
     } catch (error) {
         console.error('Ошибка:', error);
         alert('Ошибка сохранения');
@@ -81,7 +88,6 @@ async function deleteMount(id: number) {
     try {
         await axios.delete(`/api/types_of_mounts/${id}/`);
         mounts.value = mounts.value.filter(m => m.id !== id);
-        getMountCardData();
     } catch (error) {
         console.error('Ошибка:', error);
         alert('Не удалось удалить');
@@ -105,6 +111,12 @@ async function deleteMount(id: number) {
             </div>
         </fieldset>
     </form>
+
+    <fieldset class="mt-4 mb-2">
+        <legend>Фильтрация карточек</legend>
+        <label class="form-label d-flex">Название:</label>
+        <search-select-label :items="strTitles" v-model="filterTitle" />
+    </fieldset>
 
     <div class="d-flex flex-column gap-3 mt-4 mb-2">
         <div v-for="mount in mountCardData" :key="mount.id">
