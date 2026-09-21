@@ -13,6 +13,7 @@ import { storeToRefs } from "pinia";
 import { useUserInfoStore } from "@/stores/user_info_store.ts";
 import SearchSelectIdLabel from "@/components/ui/SearchSelectIdLabel.vue";
 import SearchSelectLabel from "@/components/ui/SearchSelectLabel.vue";
+import Stats from "@/components/ui/Stats.vue";
 
 const countries = ref([] as Country[]);
 const ammoTypes = ref([] as AmmoType[]);
@@ -72,22 +73,22 @@ const searchMount = ref<string>("");
 const searchConflict = ref<string>("");
 const filteredConstructors = computed(() => {
     const search = searchConstructor.value.toLowerCase();
-    return constructors.value.filter(c => 
-        form.value.constructors.includes(c.id) || 
+    return constructors.value.filter(c =>
+        form.value.constructors.includes(c.id) ||
         c.name.toLowerCase().includes(search)
     );
 });
 const filteredMounts = computed(() => {
     const search = searchMount.value.toLowerCase();
-    return typesOfMounts.value.filter(m => 
-        form.value.types_of_mounts.includes(m.id) || 
+    return typesOfMounts.value.filter(m =>
+        form.value.types_of_mounts.includes(m.id) ||
         m.title.toLowerCase().includes(search)
     );
 });
 const filteredConflicts = computed(() => {
     const search = searchConflict.value.toLowerCase();
-    return armedConflicts.value.filter(c => 
-        form.value.used_in_conflicts.includes(c.id) || 
+    return armedConflicts.value.filter(c =>
+        form.value.used_in_conflicts.includes(c.id) ||
         c.title.toLowerCase().includes(search)
     );
 });
@@ -104,12 +105,6 @@ onBeforeMount(async () => {
 })
 
 const rifleCardData = computed<RifleCardData[]>(() => {
-    if (rifles.value.length === 0 || countries.value.length === 0 || ammoTypes.value.length === 0) {
-        return [];
-    }
-    if (constructors.value.length === 0 || armedConflicts.value.length === 0 || typesOfMounts.value.length === 0) {
-        return [];
-    }
     let data = rifles.value.map(rifle => {
         const ammo = ammoTypes.value.find(a => a.id === rifle.ammo_type);
         const country = countries.value.find(c => c.id === rifle.country_of_origin);
@@ -338,6 +333,20 @@ function onDelPicture() {
     }
     preview.value = null;
 }
+
+async function exportToExcel() {
+    const response = await axios.get('/api/rifles/excel/',{
+        responseType: 'blob',
+    });
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'rifles.xlsx');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+}
 </script>
 
 <template>
@@ -383,8 +392,7 @@ function onDelPicture() {
             </div>
             <div class="mb-3">
                 <label class="form-label">Типы креплений</label>
-                <input type="text" class="form-control mb-2" placeholder="Поиск крепления..."
-                    v-model="searchMount" />
+                <input type="text" class="form-control mb-2" placeholder="Поиск крепления..." v-model="searchMount" />
                 <select class="form-select" multiple size="5" v-model="form.types_of_mounts">
                     <option v-for="mount in filteredMounts" :key="mount.id" :value="mount.id">
                         {{ mount.title }}
@@ -404,7 +412,7 @@ function onDelPicture() {
                 <div class="form-text">Зажмите Ctrl для выбора нескольких элементов</div>
             </div>
             <div class="mb-3">
-                <label for="formFile" class="form-label">Загрузить картинку</label>
+                <label class="form-label">Загрузить картинку</label>
                 <input class="form-control" type="file" accept="image/*" ref="pictureRef" @change="onFileChange">
                 <div v-if="preview" class="mt-3 d-flex gap-2 align-items-end">
                     <img :src="preview" alt="Картинка" class="mw-200">
@@ -462,6 +470,15 @@ function onDelPicture() {
             <label class="form-check-label">Без картинки</label>
         </div>
     </fieldset>
+
+    <stats v-if="moderatorPerm" url="rifles" />
+
+    <div  v-if="moderatorPerm" class="mt-4 mb-2" >
+        <legend>Экспорт в Excel</legend>
+        <button type="button" class="btn btn-success" @click="exportToExcel">
+            Экспорт в Excel
+        </button>
+    </div>
 
     <div class="d-flex flex-column gap-3 mt-4 mb-2">
         <div v-for="rifle in rifleCardData" :key="rifle.id">

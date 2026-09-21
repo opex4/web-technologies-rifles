@@ -7,11 +7,13 @@ import TypeOfMountCard from '@/components/TypeOfMountCard.vue';
 import { storeToRefs } from "pinia";
 import { useUserInfoStore } from "@/stores/user_info_store.ts";
 import SearchSelectLabel from "@/components/ui/SearchSelectLabel.vue";
+import Stats from "@/components/ui/Stats.vue";
 
 const userStore = useUserInfoStore();
 const {
     builderPerm,
     secondPerm,
+    moderatorPerm,
 } = storeToRefs(userStore);
 
 const mounts = ref([] as TypeOfMount[]);
@@ -117,6 +119,8 @@ async function deleteMount(id: number) {
         <label class="form-label d-flex">Название:</label>
         <search-select-label :items="strTitles" v-model="filterTitle" />
     </fieldset>
+
+    <stats v-if="moderatorPerm" url="types_of_mounts" />
 
     <div class="d-flex flex-column gap-3 mt-4 mb-2">
         <div v-for="mount in mountCardData" :key="mount.id">

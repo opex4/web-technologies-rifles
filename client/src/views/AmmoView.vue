@@ -6,6 +6,7 @@ import AmmoCard from '@/components/AmmoCard.vue';
 import { storeToRefs } from "pinia";
 import { useUserInfoStore } from "@/stores/user_info_store.ts";
 import SearchSelectLabel from "@/components/ui/SearchSelectLabel.vue";
+import Stats from "@/components/ui/Stats.vue";
 
 const userStore = useUserInfoStore();
 const {
@@ -127,6 +128,8 @@ async function deleteAmmo(id: number) {
         <label class="form-label d-flex">Название:</label>
         <search-select-label :items="strTitles" v-model="filterTitle" />
     </fieldset>
+
+    <stats v-if="moderatorPerm" url="ammo_types" />
 
     <div class="d-flex flex-column gap-3 mt-4 mb-2">
         <div v-for="ammo in ammoCardData" :key="ammo.id">

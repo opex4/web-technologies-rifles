@@ -6,7 +6,7 @@ from rifles.models import Rifle, Constructor, AmmoType, ArmedConflict, Country, 
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
-        fields = '__all__'
+        fields = '__all__'        
 
 
 class ArmedConflictSerializer(serializers.ModelSerializer):

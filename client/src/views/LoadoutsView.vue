@@ -11,6 +11,7 @@ import { storeToRefs } from "pinia";
 import { useUserInfoStore } from "@/stores/user_info_store.ts";
 import SearchSelectIdLabel from "@/components/ui/SearchSelectIdLabel.vue";
 import SearchSelectLabel from "@/components/ui/SearchSelectLabel.vue";
+import Stats from "@/components/ui/Stats.vue";
 
 const userStore = useUserInfoStore();
 const {
@@ -76,7 +77,7 @@ onBeforeMount(async () => {
 });
 
 const loadoutCardData = computed<LoadoutCardData[]>(() => {
-    if (loadouts.value.length === 0 || rifles.value.length === 0 || attachments.value.length === 0 || mounts.value.length === 0) {
+    if (loadouts.value.length === 0 || rifles.value.length === 0) {
         return [];
     }
 
@@ -257,6 +258,7 @@ function onRifleChange() {
             </div>
         </fieldset>
     </form>
+
     <fieldset class="mt-4 mb-2">
         <legend>Фильтрация карточек</legend>
         <label class="form-label d-flex">Название:</label>
@@ -268,6 +270,9 @@ function onRifleChange() {
         <label class="form-label d-flex mt-2">Обвес:</label>
         <search-select-label :items="strAtts" v-model="filterAtt" />
     </fieldset>
+
+    <stats v-if="moderatorPerm" url="loadouts" />
+    
     <div class="d-flex flex-column gap-3 mt-4 mb-2">
         <div v-for="loadout in loadoutCardData" :key="loadout.id">
             <loadout-card :loadout="loadout" @deleteLoadout="deleteLoadout" @updateLoadout="startEditing" />

@@ -6,6 +6,7 @@ import ConstructorCard from '@/components/ConstructorCard.vue';
 import { storeToRefs } from "pinia";
 import { useUserInfoStore } from "@/stores/user_info_store.ts";
 import SearchSelectLabel from "@/components/ui/SearchSelectLabel.vue";
+import Stats from "@/components/ui/Stats.vue";
 
 const userStore = useUserInfoStore();
 const {
@@ -185,6 +186,8 @@ async function deleteConstructor(id: number) {
             </div>
         </div>
     </fieldset>
+
+    <stats v-if="moderatorPerm" url="constructors" />
 
     <div class="d-flex flex-column gap-3 mt-4 mb-2">
         <div v-for="constructor in constructorsCardData" :key="constructor.id">

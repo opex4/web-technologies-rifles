@@ -9,11 +9,13 @@ import { storeToRefs } from "pinia";
 import { useUserInfoStore } from "@/stores/user_info_store.ts";
 import SearchSelectIdLabel from "@/components/ui/SearchSelectIdLabel.vue";
 import SearchSelectLabel from "@/components/ui/SearchSelectLabel.vue";
+import Stats from "@/components/ui/Stats.vue";
 
 const userStore = useUserInfoStore();
 const {
     builderPerm,
     secondPerm,
+    moderatorPerm,
 } = storeToRefs(userStore);
 
 const attachments = ref([] as Attachment[]);
@@ -235,6 +237,8 @@ watch(filterIsNotPicture, (newValue, oldValue) => {
             <label class="form-check-label">Без картинки</label>
         </div>
     </fieldset>
+
+    <stats v-if="moderatorPerm" url="attachments" />
 
     <div class="d-flex flex-column gap-3 mt-4 mb-2">
         <div v-for="attachment in attachmentCardData" :key="attachment.id">
