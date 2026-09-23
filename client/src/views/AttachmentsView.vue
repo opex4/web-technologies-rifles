@@ -188,7 +188,7 @@ watch(filterIsNotPicture, (newValue, oldValue) => {
 </script>
 
 <template>
-    <form @submit.prevent="submitForm" v-if="builderPerm && secondPerm">
+    <form @submit.prevent="submitForm" v-if="builderPerm">
         <fieldset>
             <legend>{{ editingId !== null ? 'Редактирование обвеса' : 'Создание нового обвеса' }}</legend>
             <div class="mb-3">

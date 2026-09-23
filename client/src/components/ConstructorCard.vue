@@ -37,8 +37,8 @@ const onUpdateConstructor = () => {
                     <h2 class="d-flex justify-content-center align-items-center m-0">
                         {{ constructor.name }}
                     </h2>
-                    <div class="d-flex justify-content-end" v-if="moderatorPerm && secondPerm">
-                        <button type="button" class="btn btn-success m-1" @click="onUpdateConstructor">Update</button>
+                    <div class="d-flex justify-content-end" v-if="moderatorPerm">
+                        <button type="button" class="btn btn-success m-1" @click="onUpdateConstructor" v-if="secondPerm">Update</button>
                         <button type="button" class="btn btn-danger m-1" @click="onDelConstructor">Delete</button>
                     </div>
                 </div>

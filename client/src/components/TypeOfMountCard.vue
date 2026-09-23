@@ -37,8 +37,8 @@ const onUpdateMount = () => {
                     <h2 class="d-flex justify-content-center align-items-center m-0">
                         {{ mount.title }}
                     </h2>
-                    <div class="d-flex justify-content-end" v-if="builderPerm && secondPerm">
-                        <button type="button" class="btn btn-success m-1" @click="onUpdateMount">Update</button>
+                    <div class="d-flex justify-content-end" v-if="builderPerm">
+                        <button type="button" class="btn btn-success m-1" @click="onUpdateMount" v-if="secondPerm">Update</button>
                         <button type="button" class="btn btn-danger m-1" @click="onDelMount">Delete</button>
                     </div>
                 </div>

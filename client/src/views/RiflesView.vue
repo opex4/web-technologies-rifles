@@ -350,7 +350,7 @@ async function exportToExcel() {
 </script>
 
 <template>
-    <form @submit.prevent="submitForm" v-if="moderatorPerm && secondPerm">
+    <form @submit.prevent="submitForm" v-if="moderatorPerm">
         <fieldset>
             <legend>{{ editingId !== null ? 'Редактирование винтовки' : 'Создание новой винтовки' }}</legend>
             <div class="mb-3">

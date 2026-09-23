@@ -98,7 +98,7 @@ async function deleteMount(id: number) {
 </script>
 
 <template>
-    <form @submit.prevent="submitForm" v-if="builderPerm && secondPerm">
+    <form @submit.prevent="submitForm" v-if="builderPerm">
         <fieldset>
             <legend>{{ editingId !== null ? 'Редактирование типа крепления' : 'Создание нового типа крепления' }}</legend>
             <div class="mb-3">

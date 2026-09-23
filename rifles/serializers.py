@@ -10,8 +10,6 @@ class CountrySerializer(serializers.ModelSerializer):
 
 
 class ArmedConflictSerializer(serializers.ModelSerializer):
-    countries = CountrySerializer(many=True, read_only=True)
-
     class Meta:
         model = ArmedConflict
         fields = '__all__'

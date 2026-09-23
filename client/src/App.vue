@@ -25,7 +25,7 @@ onBeforeMount(async () => {
             <router-link class="flex-sm-fill text-sm-center nav-link" exact-active-class="active"
                 to="/constructors">Конструкторы</router-link>
             <router-link class="flex-sm-fill text-sm-center nav-link" exact-active-class="active"
-                to="/ammo">Аммуниция</router-link>
+                to="/ammo">Калибры</router-link>
             <router-link class="flex-sm-fill text-sm-center nav-link" exact-active-class="active"
                 to="/conflicts">Конфликты</router-link>
             <router-link v-if="builderPerm" class="flex-sm-fill text-sm-center nav-link" exact-active-class="active"

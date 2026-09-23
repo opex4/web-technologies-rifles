@@ -134,7 +134,7 @@ async function deleteConstructor(id: number) {
 </script>
 
 <template>
-    <form @submit.prevent="submitForm" v-if="moderatorPerm && secondPerm">
+    <form @submit.prevent="submitForm" v-if="moderatorPerm">
         <fieldset>
             <legend>{{ editingId !== null ? 'Редактирование конструктора' : 'Создание нового конструктора' }}</legend>
             <div class="mb-3">

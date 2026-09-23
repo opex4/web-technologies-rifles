@@ -126,7 +126,7 @@ async function deleteConflict(id: number) {
 </script>
 
 <template>
-    <form @submit.prevent="submitForm" v-if="moderatorPerm && secondPerm">
+    <form @submit.prevent="submitForm" v-if="moderatorPerm">
         <fieldset>
             <legend>{{ editingId !== null ? 'Редактирование конфликта' : 'Создание нового конфликта' }}</legend>
             <div class="mb-3">

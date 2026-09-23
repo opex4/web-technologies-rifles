@@ -224,7 +224,7 @@ function onRifleChange() {
 </script>
 
 <template>
-    <form @submit.prevent="submitForm" v-if="builderPerm && secondPerm">
+    <form @submit.prevent="submitForm" v-if="builderPerm">
         <fieldset>
             <legend>{{ editingId !== null ? 'Редактирование сборки' : 'Создание новой сборки' }}</legend>
             <div class="mb-3">

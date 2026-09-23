@@ -105,7 +105,7 @@ async function deleteAmmo(id: number) {
 </script>
 
 <template>
-    <form @submit.prevent="submitForm" v-if="moderatorPerm && secondPerm">
+    <form @submit.prevent="submitForm" v-if="moderatorPerm">
         <fieldset>
             <legend>{{ editingId !== null ? 'Редактирование калибра' : 'Создание нового калибра' }}</legend>
             <div class="mb-3">

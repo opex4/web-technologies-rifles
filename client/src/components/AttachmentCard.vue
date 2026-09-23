@@ -37,8 +37,8 @@ const onUpdateAttachment = () => {
                     <h2 class="d-flex justify-content-center align-items-center m-0">
                         {{ attachment.title }}
                     </h2>
-                    <div class="d-flex justify-content-end" v-if="builderPerm && secondPerm">
-                        <button type="button" class="btn btn-success m-1" @click="onUpdateAttachment">Update</button>
+                    <div class="d-flex justify-content-end" v-if="builderPerm">
+                        <button type="button" class="btn btn-success m-1" @click="onUpdateAttachment" v-if="secondPerm">Update</button>
                         <button type="button" class="btn btn-danger m-1" @click="onDelAttachment">Delete</button>
                     </div>
                 </div>

@@ -1,7 +1,7 @@
 from rest_framework import viewsets, mixins
 from general.models import UserProfile
 from general.permissions import BasePermission, ReaderPermissions, BuilderPermissions, ModeratorPermissions, \
-    CreatorLoadoutPermissions
+    CreatorLoadoutPermissions, SecondFactorPermission
     
 from django.db.models import Avg, Count, Max, Min
 from rest_framework.decorators import action
@@ -29,7 +29,9 @@ class RiflesViewSet(
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             return [ReaderPermissions()]
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+        if self.action in ['update', 'partial_update']:
+            return [ModeratorPermissions(), SecondFactorPermission()]
+        if self.action in ['create', 'destroy']:
             return [ModeratorPermissions()]
         return [BasePermission()]
     
@@ -93,7 +95,9 @@ class AmmoTypesViewSet(
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             return [ReaderPermissions()]
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+        if self.action in ['update', 'partial_update']:
+            return [ModeratorPermissions(), SecondFactorPermission()]
+        if self.action in ['create', 'destroy']:
             return [ModeratorPermissions()]
         return [BasePermission()]
     
@@ -128,7 +132,9 @@ class CountriesViewSet(
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             return [ReaderPermissions()]
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+        if self.action in ['update', 'partial_update']:
+            return [ModeratorPermissions(), SecondFactorPermission()]
+        if self.action in ['create', 'destroy']:
             return [ModeratorPermissions()]
         return [BasePermission()]
     
@@ -163,7 +169,9 @@ class ArmedConflictsViewSet(
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             return [ReaderPermissions()]
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+        if self.action in ['update', 'partial_update']:
+            return [ModeratorPermissions(), SecondFactorPermission()]
+        if self.action in ['create', 'destroy']:
             return [ModeratorPermissions()]
         return [BasePermission()]
     
@@ -198,7 +206,9 @@ class ConstructorsViewSet(
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             return [ReaderPermissions()]
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+        if self.action in ['update', 'partial_update']:
+            return [ModeratorPermissions(), SecondFactorPermission()]
+        if self.action in ['create', 'destroy']:
             return [ModeratorPermissions()]
         return [BasePermission()]
     
@@ -233,7 +243,9 @@ class TypeOfMountViewSet(
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             return [ReaderPermissions()]
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+        if self.action in ['update', 'partial_update']:
+            return [ModeratorPermissions(), SecondFactorPermission()]
+        if self.action in ['create', 'destroy']:
             return [ModeratorPermissions()]
         return [BasePermission()]
     
@@ -268,7 +280,9 @@ class AttachmentViewSet(
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             return [BuilderPermissions()]
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+        if self.action in ['update', 'partial_update']:
+            return [ModeratorPermissions(), SecondFactorPermission()]
+        if self.action in ['create', 'destroy']:
             return [ModeratorPermissions()]
         return [BasePermission()]
     
@@ -302,7 +316,9 @@ class LoadoutViewSet(
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             return [BuilderPermissions()]
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+        if self.action in ['update', 'partial_update']:
+            return [BuilderPermissions(), CreatorLoadoutPermissions(), SecondFactorPermission()]
+        if self.action in ['create', 'destroy']:
             return [BuilderPermissions(), CreatorLoadoutPermissions()]
         return [BasePermission()]
     

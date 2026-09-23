@@ -105,7 +105,7 @@ async function deleteCountry(id: number) {
 </script>
 
 <template>
-    <form @submit.prevent="submitForm" v-if="moderatorPerm && secondPerm">
+    <form @submit.prevent="submitForm" v-if="moderatorPerm">
         <fieldset>
             <legend>{{ editingId !== null ? 'Редактирование страны' : 'Создание новой страны' }}</legend>
             <div class="mb-3">
