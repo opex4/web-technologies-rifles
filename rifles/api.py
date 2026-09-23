@@ -174,7 +174,7 @@ class ArmedConflictsViewSet(
         if self.action in ['create', 'destroy']:
             return [ModeratorPermissions()]
         return [BasePermission()]
-    
+       
     class StatsSerializer(serializers.Serializer):
         count = serializers.IntegerField()
         avg = serializers.FloatField()

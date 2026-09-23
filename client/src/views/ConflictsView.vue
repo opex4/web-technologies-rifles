@@ -26,6 +26,7 @@ const strTitles = computed(() => conflicts.value.map(l => l.title));
 const filterTitle = ref<string>("");
 const filterDateFrom = ref<string>("");
 const filterDateTo = ref<string>("");
+const correctDate = ref<boolean>(true);
 
 onBeforeMount(async () => {
     await loadConflicts();
@@ -61,6 +62,12 @@ const conflictsCardData = computed<ArmedConflict[]>(() => {
 
 async function submitForm() {
     try {
+        if (form.value.finished_at && form.value.finished_at < form.value.started_at) {
+            correctDate.value = false;
+            return;
+        }
+        correctDate.value = true;
+
         const dataToSend = {
             ...form.value,
             finished_at: form.value.finished_at || null
@@ -138,7 +145,9 @@ async function deleteConflict(id: number) {
                 <input type="date" class="form-control" v-model="form.started_at" required>
             </div>
             <div class="mb-3">
-                <label class="form-label">Дата окончания</label>
+                <label class="form-label d-flex">Дата окончания
+                    <div class="text-danger ms-2" v-if="!correctDate">Дата окончания не может быть раньше даты начала.</div>
+                </label>
                 <input type="date" class="form-control" v-model="form.finished_at">
             </div>
             <div class="d-flex gap-2">

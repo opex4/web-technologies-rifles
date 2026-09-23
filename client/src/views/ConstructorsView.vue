@@ -28,6 +28,7 @@ const filterBornDateFrom = ref<string>("");
 const filterBornDateTo = ref<string>("");
 const filterDieDateFrom = ref<string>("");
 const filterDieDateTo = ref<string>("");
+const correctDate = ref<boolean>(true);
 
 onBeforeMount(async () => {
     await loadConstructors();
@@ -69,6 +70,12 @@ async function loadConstructors() {
 
 async function submitForm() {
     try {
+        if (form.value.died_at && form.value.died_at < form.value.born_at) {
+            correctDate.value = false;
+            return;
+        }
+        correctDate.value = true;
+
         const dataToSend = {
             ...form.value,
             died_at: form.value.died_at || null
@@ -146,7 +153,9 @@ async function deleteConstructor(id: number) {
                 <input type="date" class="form-control" v-model="form.born_at" required>
             </div>
             <div class="mb-3">
-                <label class="form-label">Дата смерти</label>
+                <label class="form-label d-flex">Дата смерти
+                    <div class="text-danger ms-2" v-if="!correctDate">Дата смерти не может быть раньше даты рождения.</div>
+                </label>
                 <input type="date" class="form-control" v-model="form.died_at">
             </div>
             <div class="d-flex gap-2">

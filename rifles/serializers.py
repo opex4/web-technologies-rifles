@@ -13,6 +13,17 @@ class ArmedConflictSerializer(serializers.ModelSerializer):
     class Meta:
         model = ArmedConflict
         fields = '__all__'
+        
+    def validate(self, data):
+        started_at = data.get('started_at', getattr(self.instance, 'started_at', None))
+        finished_at = data.get('finished_at', getattr(self.instance, 'finished_at', None))
+        
+        if started_at and finished_at and started_at > finished_at:
+            raise serializers.ValidationError({
+                'dateError': 'Дата окончания не может быть раньше даты начала.'
+            })
+        
+        return data
 
 
 class AmmoTypeSerializer(serializers.ModelSerializer):
@@ -25,6 +36,17 @@ class ConstructorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Constructor
         fields = '__all__'
+        
+    def validate(self, data):
+        born_at = data.get('born_at', getattr(self.instance, 'born_at', None))
+        died_at = data.get('died_at', getattr(self.instance, 'died_at', None))
+        
+        if born_at and died_at and born_at > died_at:
+            raise serializers.ValidationError({
+                'dateError': 'Дата смерти не может быть раньше даты рождения.'
+            })
+        
+        return data
 
 
 class RifleSerializer(serializers.ModelSerializer):
