@@ -62,11 +62,11 @@
             <button type="button" class="btn btn-danger mt-2" @click="onLogout">Выйти</button>  
         </div>
         <div class="d-flex flex-column gap-3 m-4 mb-2" v-if="!second">
-            <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" v-model="key">
+            <input type="text" class="form-control" v-model="key">
             <button type="button" class="btn btn-primary" @click="onActivate">Активировать второй фактор</button>
         </div>
         <div class="d-flex flex-column gap-3 m-4 mb-2" v-if="!second">
-            <img  :src="qrcodeUrl" alt="QRCode" v-if="qrcodeUrl">
+            <img :src="qrcodeUrl" alt="QRCode" v-if="qrcodeUrl">
             <button type="button" class="btn btn-primary" @click="getTotpKey">Запросить второй фактор</button>
         </div>
     </div>

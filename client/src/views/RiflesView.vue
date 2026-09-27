@@ -105,7 +105,7 @@ onBeforeMount(async () => {
 })
 
 const rifleCardData = computed<RifleCardData[]>(() => {
-    let data = rifles.value.map(rifle => {
+    return rifles.value.map(rifle => {
         const ammo = ammoTypes.value.find(a => a.id === rifle.ammo_type);
         const country = countries.value.find(c => c.id === rifle.country_of_origin);
 
@@ -128,6 +128,10 @@ const rifleCardData = computed<RifleCardData[]>(() => {
             picture: rifle.picture,
         };
     });
+});
+
+const filteredRifleCardData = computed<RifleCardData[]>(() => {
+    let data = rifleCardData.value
 
     if (filterTitle.value) {
         data = data.filter(r => r.title === filterTitle.value);
@@ -346,6 +350,7 @@ async function exportToExcel() {
     document.body.appendChild(link);
     link.click();
     link.remove();
+    window.URL.revokeObjectURL(url);
 }
 </script>
 
@@ -481,7 +486,7 @@ async function exportToExcel() {
     </div>
 
     <div class="d-flex flex-column gap-3 mt-4 mb-2">
-        <div v-for="rifle in rifleCardData" :key="rifle.id">
+        <div v-for="rifle in filteredRifleCardData" :key="rifle.id">
             <rifle-card :rifle="rifle" @deleteRifle="deleteRifle" @updateRifle="startEditing" />
         </div>
     </div>

@@ -81,7 +81,7 @@ const loadoutCardData = computed<LoadoutCardData[]>(() => {
         return [];
     }
 
-    let data = loadouts.value.map(loadout => {
+    return loadouts.value.map(loadout => {
         const rifle = rifles.value.find(r => r.id === loadout.rifle);
         return {
             id: loadout.id,
@@ -94,6 +94,10 @@ const loadoutCardData = computed<LoadoutCardData[]>(() => {
             })
         };
     });
+});
+
+const filteredLoadoutCardData = computed<LoadoutCardData[]>(() => {
+    let data = loadoutCardData.value;
 
     if (filterCreator.value) {
         data = data.filter(l => l.creatorName === filterCreator.value);
@@ -274,7 +278,7 @@ function onRifleChange() {
     <stats v-if="moderatorPerm" url="loadouts" />
     
     <div class="d-flex flex-column gap-3 mt-4 mb-2">
-        <div v-for="loadout in loadoutCardData" :key="loadout.id">
+        <div v-for="loadout in filteredLoadoutCardData" :key="loadout.id">
             <loadout-card :loadout="loadout" @deleteLoadout="deleteLoadout" @updateLoadout="startEditing" />
         </div>
     </div>

@@ -24,7 +24,16 @@ class RiflesViewSet(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet
 ):
-    queryset = Rifle.objects.all()
+    def get_queryset(self):
+        return Rifle.objects.select_related(
+            'country_of_origin', 
+            'ammo_type'
+        ).prefetch_related(
+            'constructors', 
+            'used_in_conflicts', 
+            'types_of_mounts'            
+        )
+    
     serializer_class = RifleSerializer
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -61,7 +70,7 @@ class RiflesViewSet(
         headers = ['ID', 'Название', 'Описание', 'Дата создания', 'Патрон', 'Страна']
         ws.append(headers)
         
-        for rifle in self.get_queryset():
+        for rifle in self.get_queryset().select_related('ammo_type', 'country_of_origin'):
             ws.append([
                 rifle.id,
                 rifle.title,
@@ -327,10 +336,23 @@ class LoadoutViewSet(
         
     def get_queryset(self):
         user = self.request.user
+        
         if user.userprofile.type in [UserProfile.Type.builder]:
-            return Loadout.objects.filter(creator=user.userprofile)
+            return Loadout.objects.select_related(
+                'rifle',
+                'creator',
+                'creator__user'
+            ).prefetch_related(
+                'attachments'
+            ).filter(creator=user.userprofile)
         if user.userprofile.type in [UserProfile.Type.moderator]:
-            return Loadout.objects.all()
+            return Loadout.objects.select_related(
+                'rifle',
+                'creator',
+                'creator__user'
+            ).prefetch_related(
+                'attachments'
+            )
         return Loadout.objects.none()
     
     class StatsSerializer(serializers.Serializer):

@@ -91,15 +91,15 @@
         <form @submit.stop.prevent="onLoginFormSubmit">
             <div class="mb-3">
                 <label for="username" class="form-label">Имя пользователя</label>
-                <input type="text" class="form-control" id="username" aria-describedby="Введите имя пользователя" v-model="username">
+                <input type="text" class="form-control" v-model="username">
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Пароль</label>
-                <input type="password" class="form-control" id="password" aria-describedby="Введите пароль" v-model="password">
+                <input type="password" class="form-control" v-model="password">
             </div>
             <div class="mb-3" v-if="isReg">
-                <label for="confirmPassword" class="form-label">Повторение Пароля</label>
-                <input type="password" class="form-control" id="confirmPassword" aria-describedby="Повторите пароль" v-model="confirmPassword">
+                <label for="confirmPassword" class="form-label">Повторение пароля</label>
+                <input type="password" class="form-control" v-model="confirmPassword">
             </div>
             <div class="d-flex gap-2">
                 <button 
