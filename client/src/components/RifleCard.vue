@@ -16,7 +16,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     (e: 'deleteRifle', id: number): void;
-    (e: 'updateRifle', rifle: RifleCardData): void;
+    (e: 'updateRifle', id: number): void;
 }>();
 
 const onDelRifle = () => {
