@@ -244,10 +244,12 @@ function onRifleChange() {
             </div>
             <div class="mb-3" v-if="rifleMountsAttachments.length > 0">
                 <label class="form-label">Типы креплений:</label>
-                <div v-for="item in rifleMountsAttachments" :key="item.mountId">
-                    <label class="form-label small text-muted">{{ item.mountTitle }}</label>
-                    <search-select-id-label :items="item.availableAttachments"
-                        v-model="form.attachments[item.mountId]" />
+                <div class="d-flex flex-column" v-for="item in rifleMountsAttachments" :key="item.mountId">
+                    <label class="form-label text-muted">{{ item.mountTitle }}</label>
+                    <div>
+                        <search-select-id-label :items="item.availableAttachments"
+                            v-model="form.attachments[item.mountId]" />
+                    </div>
                 </div>
             </div>
             <div class="mb-3 text-muted" v-else-if="form.rifle !== null">
@@ -268,7 +270,7 @@ function onRifleChange() {
         <label class="form-label d-flex">Название:</label>
         <search-select-label :items="strTitles" v-model="filterTitle" />
         <label class="form-label d-flex mt-2" v-if="moderatorPerm">Создатель:</label>
-        <search-select-label :items="strCreators" v-model="filterCreator" />
+        <search-select-label v-if="moderatorPerm" :items="strCreators" v-model="filterCreator" />
         <label class="form-label d-flex mt-2">Винтовка:</label>
         <search-select-label :items="strRifles" v-model="filterRifle" />
         <label class="form-label d-flex mt-2">Обвес:</label>
@@ -276,7 +278,7 @@ function onRifleChange() {
     </fieldset>
 
     <stats v-if="moderatorPerm" url="loadouts" />
-    
+
     <div class="d-flex flex-column gap-3 mt-4 mb-2">
         <div v-for="loadout in filteredLoadoutCardData" :key="loadout.id">
             <loadout-card :loadout="loadout" @deleteLoadout="deleteLoadout" @updateLoadout="startEditing" />

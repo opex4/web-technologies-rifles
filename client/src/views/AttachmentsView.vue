@@ -101,7 +101,7 @@ async function submitForm() {
         const file = pictureRef.value?.files?.[0];
         if (file) {
             formData.append('picture', file);
-        } else {
+        } else if (!file && preview.value == null) {
             formData.append('picture', '');
         }
 
