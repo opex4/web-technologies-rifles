@@ -438,7 +438,7 @@ async function exportToExcel() {
     </form>
 
     <fieldset class="mt-4 mb-2">
-        <legend>Фильтрация карточек</legend>
+        <legend>Фильтрация винтовок</legend>
         <label class="form-label d-flex mt-2">Название:</label>
         <search-select-label :items="titlesStr" v-model="filterTitle" />
         <label class="form-label d-flex mt-2">Страна:</label>

@@ -162,7 +162,7 @@ async function deleteConflict(id: number) {
     </form>
 
     <fieldset class="mt-4 mb-2">
-        <legend>Фильтрация карточек</legend>
+        <legend>Фильтрация конфликтов</legend>
         <label class="form-label d-flex">Название:</label>
         <search-select-label :items="strTitles" v-model="filterTitle" />
         <div class="mb-2"></div>

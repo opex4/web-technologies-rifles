@@ -266,7 +266,7 @@ function onRifleChange() {
     </form>
 
     <fieldset class="mt-4 mb-2">
-        <legend>Фильтрация карточек</legend>
+        <legend>Фильтрация сборок</legend>
         <label class="form-label d-flex">Название:</label>
         <search-select-label :items="strTitles" v-model="filterTitle" />
         <label class="form-label d-flex mt-2" v-if="moderatorPerm">Создатель:</label>

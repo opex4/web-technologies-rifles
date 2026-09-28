@@ -11,7 +11,6 @@ import Stats from "@/components/ui/Stats.vue";
 
 const userStore = useUserInfoStore();
 const {
-    builderPerm,
     secondPerm,
     moderatorPerm,
 } = storeToRefs(userStore);
@@ -98,7 +97,7 @@ async function deleteMount(id: number) {
 </script>
 
 <template>
-    <form @submit.prevent="submitForm" v-if="builderPerm">
+    <form @submit.prevent="submitForm" v-if="moderatorPerm">
         <fieldset>
             <legend>{{ editingId !== null ? 'Редактирование типа крепления' : 'Создание нового типа крепления' }}</legend>
             <div class="mb-3">
@@ -115,7 +114,7 @@ async function deleteMount(id: number) {
     </form>
 
     <fieldset class="mt-4 mb-2">
-        <legend>Фильтрация карточек</legend>
+        <legend>Фильтрация типов креплений</legend>
         <label class="form-label d-flex">Название:</label>
         <search-select-label :items="strTitles" v-model="filterTitle" />
     </fieldset>

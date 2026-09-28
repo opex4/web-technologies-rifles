@@ -129,7 +129,7 @@ async function deleteCountry(id: number) {
     </form>
 
     <fieldset class="mt-4 mb-2">
-        <legend>Фильтрация карточек</legend>
+        <legend>Фильтрация стран</legend>
         <label class="form-label d-flex">Название:</label>
         <search-select-label :items="strTitles" v-model="filterTitle" />
     </fieldset>
