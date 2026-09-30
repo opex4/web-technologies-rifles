@@ -19,8 +19,8 @@ export const useUserInfoStore = defineStore('userInfoStore', () => {
     const secondPerm = computed<boolean>(() => second.value === true);
 
     async function fetchUserInfo() {
-        userInfo.value = await axios.get('/api/users/my/')
-            .then(res => res.data as User);
+        const r = await axios.get('/api/users/my/');
+        userInfo.value = r.data;
 
         username.value = userInfo.value?.username;
         isAuth.value = userInfo.value?.isAuth;

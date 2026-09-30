@@ -33,8 +33,8 @@ onBeforeMount(async () => {
 });
 
 async function loadConflicts() {
-    conflicts.value = await axios.get('/api/armed_conflicts/')
-        .then(res => res.data as ArmedConflict[]);
+    const r = await axios.get('/api/armed_conflicts/');
+    conflicts.value = r.data;
 }
 
 const conflictsCardData = computed<ArmedConflict[]>(() => {

@@ -43,8 +43,8 @@ const countriesCardData = computed<Country[]>(() => {
 })
 
 async function loadCountries() {
-    countries.value = await axios.get('/api/countries/')
-        .then(res => res.data as Country[]);
+    const r = await axios.get('/api/countries/');
+    countries.value = r.data;
 }
 
 async function submitForm() {

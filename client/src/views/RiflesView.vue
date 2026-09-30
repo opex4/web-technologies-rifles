@@ -177,33 +177,33 @@ async function loadAll() {
 }
 
 async function loadCountries() {
-    countries.value = await axios.get('/api/countries/')
-        .then(res => res.data as Country[]);
+    const r = await axios.get('/api/countries/');
+    countries.value = r.data;
 }
 
 async function loadAmmoTypes() {
-    ammoTypes.value = await axios.get('/api/ammo_types/')
-        .then(res => res.data as AmmoType[]);
+    const r = await axios.get('/api/ammo_types/');
+    ammoTypes.value = r.data;
 }
 
 async function loadConstructors() {
-    constructors.value = await axios.get('/api/constructors/')
-        .then(res => res.data as Constructor[]);
+    const r = await axios.get('/api/constructors/');
+    constructors.value = r.data;
 }
 
 async function loadArmedConflicts() {
-    armedConflicts.value = await axios.get('/api/armed_conflicts/')
-        .then(res => res.data as ArmedConflict[]);
+    const r = await axios.get('/api/armed_conflicts/');
+    armedConflicts.value = r.data;
 }
 
 async function loadTypesOfMounts() {
-    typesOfMounts.value = await axios.get('/api/types_of_mounts/')
-        .then(res => res.data as TypeOfMount[]);
+    const r = await axios.get('/api/types_of_mounts/');
+    typesOfMounts.value = r.data;
 }
 
 async function loadRifles() {
-    rifles.value = await axios.get('/api/rifles/')
-        .then(res => res.data as Rifle[]);
+    const r = await axios.get('/api/rifles/');
+    rifles.value = r.data;
 }
 
 async function submitForm() {

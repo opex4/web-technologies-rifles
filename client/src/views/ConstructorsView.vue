@@ -64,8 +64,8 @@ const constructorsCardData = computed<ArmedConflict[]>(() => {
 })
 
 async function loadConstructors() {
-    constructors.value = await axios.get('/api/constructors/')
-        .then(res => res.data as Constructor[]);
+    const r = await axios.get('/api/constructors/');
+    constructors.value = r.data;
 }
 
 async function submitForm() {

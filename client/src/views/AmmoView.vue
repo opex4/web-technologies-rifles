@@ -43,8 +43,8 @@ const ammoCardData = computed<AmmoType[]>(() => {
 });
 
 async function loadAmmo() {
-    ammoList.value = await axios.get('/api/ammo_types/')
-        .then(res => res.data as AmmoType[]);
+    const r = await axios.get('/api/ammo_types/');
+    ammoList.value = r.data;
 }
 
 async function submitForm() {

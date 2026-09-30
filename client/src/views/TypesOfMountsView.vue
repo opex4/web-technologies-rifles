@@ -28,8 +28,8 @@ onBeforeMount(async () => {
 });
 
 async function loadMounts() {
-    mounts.value = await axios.get('/api/types_of_mounts/')
-        .then(res => res.data as TypeOfMount[]);
+    const r = await axios.get('/api/types_of_mounts/');
+    mounts.value = r.data;
 }
 
 const mountCardData = computed<TypeOfMountCardData[]>(() => {

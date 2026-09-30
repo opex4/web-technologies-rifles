@@ -43,13 +43,13 @@ onBeforeMount(async () => {
 });
 
 async function loadAttachments() {
-    attachments.value = await axios.get('/api/attachments/')
-        .then(res => res.data as Attachment[]);
+    const r = await axios.get('/api/attachments/');
+    attachments.value = r.data;
 }
 
 async function loadTypesOfMounts() {
-    typesOfMounts.value = await axios.get('/api/types_of_mounts/')
-        .then(res => res.data as TypeOfMount[]);
+    const r = await axios.get('/api/types_of_mounts/');
+    typesOfMounts.value = r.data;
 }
 
 const attachmentCardData = computed<AttachmentCardData[]>(() => {

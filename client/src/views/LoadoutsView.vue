@@ -116,28 +116,28 @@ const filteredLoadoutCardData = computed<LoadoutCardData[]>(() => {
 });
 
 async function loadLoadouts() {
-    loadouts.value = await axios.get('/api/loadouts/')
-        .then(res => res.data as Loadout[]);
+    const r = await axios.get('/api/loadouts/');
+    loadouts.value = r.data;
 }
 
 async function loadRifles() {
-    rifles.value = await axios.get('/api/rifles/')
-        .then(res => res.data as Rifle[]);
+    const r = await axios.get('/api/rifles/');
+    rifles.value = r.data;
 }
 
 async function loadAttachments() {
-    attachments.value = await axios.get('/api/attachments/')
-        .then(res => res.data as Attachment[]);
+    const r = await axios.get('/api/attachments/');
+    attachments.value = r.data;
 }
 
 async function loadTypesOfMounts() {
-    mounts.value = await axios.get('/api/types_of_mounts/')
-        .then(res => res.data as TypeOfMount[]);
+    const r = await axios.get('/api/types_of_mounts/');
+    mounts.value = r.data;
 }
 
 async function loadUserNames() {
-    usernames.value = await axios.get('/api/users/list/')
-        .then(res => res.data as UserName[]);
+    const r = await axios.get('/api/users/list/');
+    usernames.value = r.data;
 }
 
 async function submitForm() {
